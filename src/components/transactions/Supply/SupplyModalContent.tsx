@@ -53,6 +53,7 @@ import { IsolationModeWarning } from '../Warnings/IsolationModeWarning';
 import { SNXWarning } from '../Warnings/SNXWarning';
 import { SupplyActions } from './SupplyActions';
 import { SupplyWrappedTokenActions } from './SupplyWrappedTokenActions';
+import { useBalance } from 'src/services/ca';
 
 export enum ErrorType {
   CAP_REACHED,
@@ -156,7 +157,7 @@ export const SupplyModalContent = React.memo(
     const supplyUnWrapped = underlyingAsset.toLowerCase() === API_ETH_MOCK_ADDRESS.toLowerCase();
 
     const walletBalance = supplyUnWrapped ? nativeBalance : tokenBalance;
-
+    const balances = useBalance();
     const supplyApy = poolReserve.supplyAPY;
     const { supplyCap, totalLiquidity, isFrozen, decimals, debtCeiling, isolationModeTotalDebt } =
       poolReserve;
@@ -232,7 +233,7 @@ export const SupplyModalContent = React.memo(
           symbol={supplyUnWrapped ? currentNetworkConfig.baseAssetSymbol : poolReserve.symbol}
           assets={[
             {
-              balance: maxAmountToSupply,
+              balance: (balances?.find((b) => b.symbol === poolReserve.symbol)?.balance),
               symbol: supplyUnWrapped ? currentNetworkConfig.baseAssetSymbol : poolReserve.symbol,
               iconSymbol: supplyUnWrapped
                 ? currentNetworkConfig.baseAssetSymbol
@@ -242,8 +243,8 @@ export const SupplyModalContent = React.memo(
           capType={CapType.supplyCap}
           isMaxSelected={isMaxSelected}
           disabled={supplyTxState.loading}
-          maxValue={maxAmountToSupply}
-          balanceText={<Trans>Wallet balance</Trans>}
+          maxValue={balances?.find((b) => (b.symbol === poolReserve.symbol)|| (poolReserve.symbol === 'WETH' && b.symbol === 'ETH'))?.balance }
+          balanceText={<Trans>Unified token balance</Trans>}
           event={{
             eventName: GENERAL.MAX_INPUT_SELECTION,
             eventParams: {
