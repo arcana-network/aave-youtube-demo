@@ -26,6 +26,7 @@ import { ListButtonsColumn } from '../ListButtonsColumn';
 import { ListLoader } from '../ListLoader';
 import { SuppliedPositionsListItem } from './SuppliedPositionsListItem';
 import { SuppliedPositionsListMobileItem } from './SuppliedPositionsListMobileItem';
+import { useCaSdkAuth } from 'src/services/ca';
 
 const head = [
   {
@@ -120,6 +121,9 @@ export const SuppliedPositionsList = () => {
 
   if (loading)
     return <ListLoader title={<Trans>Your supplies</Trans>} head={head.map((col) => col.title)} />;
+
+
+  const ca = useCaSdkAuth();
 
   return (
     <ListWrapper
