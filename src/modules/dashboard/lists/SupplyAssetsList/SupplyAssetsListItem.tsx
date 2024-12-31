@@ -44,7 +44,7 @@ import { ListItemWrapper } from '../ListItemWrapper';
 import { ListMobileItemWrapper } from '../ListMobileItemWrapper';
 import { ListValueColumn } from '../ListValueColumn';
 import { ListValueRow } from '../ListValueRow';
-
+import { useBalance } from 'src/services/ca';
 export const SupplyAssetsListItem = (
   params: DashboardReserve & { walletBalances: WalletBalancesMap }
 ) => {
@@ -127,6 +127,8 @@ export const SupplyAssetsListItemDesktop = ({
     setAnchorEl(null);
   };
 
+  const balances = useBalance();
+
   const wrappedToken = wrappedTokenReserves.find(
     (r) => r.tokenOut.underlyingAsset === underlyingAsset
   );
@@ -204,10 +206,10 @@ export const SupplyAssetsListItemDesktop = ({
       ) : (
         <ListValueColumn
           symbol={symbol}
-          value={Number(walletBalance)}
-          subValue={walletBalanceUSD}
+          value={Number((balances?.find((b) => b.symbol === symbol)?.balance)! || walletBalance)}
+          subValue={balances?.find((b) => b.symbol === symbol)?.balanceInFiat || walletBalanceUSD}
           withTooltip
-          disabled={Number(walletBalance) === 0 || isMaxCapReached}
+          disabled={Number((balances?.find((b) => b.symbol === symbol)?.balance)! || walletBalance) === 0 || isMaxCapReached}
           capsComponent={
             <CapsHint
               capType={CapType.supplyCap}
@@ -240,7 +242,10 @@ export const SupplyAssetsListItemDesktop = ({
 
       <ListButtonsColumn>
         <Button
-          disabled={disableSupply}
+          disabled={
+            // find balance of current token from balances variavlbe
+            !(balances?.find((b) => b.symbol === symbol)?.balanceInFiat! > 0)
+          }
           variant="contained"
           onClick={() => {
             openSupply(underlyingAsset, currentMarket, name, 'dashboard');
@@ -338,6 +343,9 @@ export const SupplyAssetsListItemMobile = ({
     (r) => r.tokenOut.underlyingAsset === underlyingAsset
   );
 
+  const caBalance = useBalance();
+
+
   return (
     <ListMobileItemWrapper
       symbol={symbol}
@@ -400,9 +408,9 @@ export const SupplyAssetsListItemMobile = ({
       ) : (
         <ListValueRow
           title={<Trans>Supply balance</Trans>}
-          value={Number(walletBalance)}
-          subValue={walletBalanceUSD}
-          disabled={Number(walletBalance) === 0 || isMaxCapReached}
+          value={Number(caBalance?.find((b) => b.symbol === symbol)?.balance || walletBalance)}
+          subValue={caBalance?.find((b) => b.symbol === symbol)?.balanceInFiat || walletBalanceUSD}
+          disabled={Number(caBalance?.find((b) => b.symbol === symbol)?.balance || walletBalance) === 0 || isMaxCapReached}
           capsComponent={
             <CapsHint
               capType={CapType.supplyCap}
