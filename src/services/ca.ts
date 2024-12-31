@@ -14,7 +14,7 @@ const useCaSdkAuth = async () => {
                 })
                 await caSDK.init()
                 balance = await caSDK.getUnifiedBalances()
-                console.log('CA SDK initialized:', caSDK)
+                console.log('CA SDK initialized')
             }
         } catch (error) {
             console.error('Error initializing CA SDK:', error)
