@@ -19,6 +19,7 @@ import { hexToAscii } from 'src/utils/utils';
 import { Web3Context } from '../hooks/useWeb3Context';
 import { WalletConnectConnector } from './WalletConnectConnector';
 import { getWallet, ReadOnlyModeConnector, WalletType } from './WalletOptions';
+import { useCaSdkAuth } from 'src/services/ca';
 
 export type ERC20TokenType = {
   address: string;
@@ -409,6 +410,9 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({ chil
           const { symbol } = await getTokenData(address);
           tokenSymbol = symbol;
         }
+        // use useCAauth function only if user is connected
+        const ca = useCaSdkAuth();
+        console.log('ca', ca);
 
         await injectedProvider.request({
           method: 'wallet_watchAsset',
