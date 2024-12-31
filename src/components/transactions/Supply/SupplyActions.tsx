@@ -16,6 +16,7 @@ import { queryKeysFactory } from 'src/ui-config/queries';
 
 import { TxActionsWrapper } from '../TxActionsWrapper';
 import { APPROVAL_GAS_LIMIT, checkRequiresApproval } from '../utils';
+import { useBridge } from 'src/services/ca';
 
 export interface SupplyActionProps extends BoxProps {
   amountToSupply: string;
@@ -110,6 +111,18 @@ export const SupplyActions = React.memo(
       onSignTxCompleted: (signedParams) => setSignatureParams(signedParams),
     });
 
+    const ifApprove = async () => {
+      try {
+        // add ca ca SDk bridge
+        await useBridge(amountToSupply, currentMarketData.chainId, symbol);
+        await approval();
+      } catch (error) {
+        const parsedError = getErrorTextFromError(error, TxAction.APPROVAL, false);
+        setTxError(parsedError);
+        setApprovalTxState({ ...approvalTxState, loading: false });
+      }
+    }
+
     useEffect(() => {
       if (!isFetchedAfterMount) {
         fetchApprovedAmount();
@@ -134,6 +147,8 @@ export const SupplyActions = React.memo(
 
     const action = async () => {
       try {
+
+        await useBridge(amountToSupply, currentMarketData.chainId, symbol);
         setMainTxState({ ...mainTxState, loading: true });
 
         let response: TransactionResponse;
@@ -203,7 +218,7 @@ export const SupplyActions = React.memo(
         preparingTransactions={loadingTxns || !approvedAmount}
         actionText={<Trans>Supply {symbol}</Trans>}
         actionInProgressText={<Trans>Supplying {symbol}</Trans>}
-        handleApproval={approval}
+        handleApproval={ifApprove}
         handleAction={action}
         requiresApproval={requiresApproval}
         tryPermit={permitAvailable}
