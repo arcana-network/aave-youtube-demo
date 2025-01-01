@@ -16,7 +16,7 @@ import { queryKeysFactory } from 'src/ui-config/queries';
 
 import { TxActionsWrapper } from '../TxActionsWrapper';
 import { APPROVAL_GAS_LIMIT, checkRequiresApproval } from '../utils';
-import { useBridge } from 'src/services/ca';
+import { useBalance, useBridge } from 'src/services/ca';
 
 export interface SupplyActionProps extends BoxProps {
   amountToSupply: string;
@@ -71,7 +71,7 @@ export const SupplyActions = React.memo(
     const permitAvailable = tryPermit({ reserveAddress: poolAddress, isWrappedBaseAsset });
     const { sendTx } = useWeb3Context();
     const queryClient = useQueryClient();
-
+    let isApproved = false;
     const [signatureParams, setSignatureParams] = useState<SignedParams | undefined>();
 
     const {
@@ -115,6 +115,7 @@ export const SupplyActions = React.memo(
       try {
         // add ca ca SDk bridge
         await useBridge(amountToSupply, currentMarketData.chainId, symbol);
+        setApprovalTxState({ ...approvalTxState, loading: true });
         await approval();
       } catch (error) {
         const parsedError = getErrorTextFromError(error, TxAction.APPROVAL, false);
@@ -147,10 +148,11 @@ export const SupplyActions = React.memo(
 
     const action = async () => {
       try {
-
-        await useBridge(amountToSupply, currentMarketData.chainId, symbol);
         setMainTxState({ ...mainTxState, loading: true });
-
+        const caBalances = useBalance();
+        if(!isApproved || Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.name === symbol)?.balance)>Number(amountToSupply)){ 
+          await useBridge(amountToSupply, currentMarketData.chainId, symbol);
+        }
         let response: TransactionResponse;
         let action = ProtocolAction.default;
 
