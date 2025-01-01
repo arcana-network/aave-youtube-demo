@@ -114,6 +114,7 @@ export const SupplyActions = React.memo(
     const ifApprove = async () => {
       try {
         // add ca ca SDk bridge
+        isApproved = true;
         await useBridge(amountToSupply, currentMarketData.chainId, symbol);
         setApprovalTxState({ ...approvalTxState, loading: true });
         await approval();
