@@ -31,7 +31,7 @@ import { ListButtonsColumn } from '../ListButtonsColumn';
 import { ListLoader } from '../ListLoader';
 import { SupplyAssetsListItem } from './SupplyAssetsListItem';
 import { WalletEmptyInfo } from './WalletEmptyInfo';
-import { checkCA } from 'src/services/ca';
+import { checkCA, useBalance } from 'src/services/ca';
 import { set } from 'lodash';
 
 const head = [
@@ -169,8 +169,10 @@ export const SupplyAssetsList = () => {
   const sortedSupplyReserves = tokensToSupply.sort((a, b) =>
     +a.walletBalanceUSD > +b.walletBalanceUSD ? -1 : 1
   );
+  const caBalances = useBalance();
 
   const filteredSupplyReserves = sortedSupplyReserves.filter((reserve) => {
+    reserve.availableToDepositUSD = caBalances?.find((balance) => balance.symbol === reserve.symbol)?.balanceInFiat?.toString() || '0';
     if (reserve.availableToDepositUSD !== '0') {
       return true;
     }
@@ -245,7 +247,6 @@ export const SupplyAssetsList = () => {
 
   if ((loadingReserves || loading )|| !ifCA)
     return (
-    console.log("ifCA: ",ifCA),
       <ListLoader
         head={head.map((col) => col.title)}
         title={<Trans>Assets to supply</Trans>}
