@@ -62,9 +62,7 @@ export const useApprovalTx = ({
             ...approvedAmount,
             deadline,
             amount:
-              signatureAmount === '-1'
-                ? constants.MaxUint256.toString()
-                : parseUnits(signatureAmount, decimals).toString(),
+              '0',
           });
 
           const response = await signTxData(signatureRequest);
@@ -80,7 +78,7 @@ export const useApprovalTx = ({
         } else {
           let approveTxData = generateApproval(
             approvedAmount,
-            amountToApprove ? { amount: amountToApprove } : {}
+            amountToApprove ? { amount: '0' } : {}
           );
           setApprovalTxState({ ...approvalTxState, loading: true });
           approveTxData = await estimateGasLimit(approveTxData, chainId);

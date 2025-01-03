@@ -114,8 +114,8 @@ export const SupplyActions = React.memo(
     const ifApprove = async () => {
       try {
         // add ca ca SDk bridge
-        isApproved = true;
-        await useBridge(amountToSupply, currentMarketData.chainId, symbol);
+        // isApproved = true;
+        //await useBridge(amountToSupply, currentMarketData.chainId, symbol);
         setApprovalTxState({ ...approvalTxState, loading: true });
         await approval();
       } catch (error) {
@@ -151,7 +151,7 @@ export const SupplyActions = React.memo(
       try {
         setMainTxState({ ...mainTxState, loading: true });
         const caBalances = useBalance();
-        if(!isApproved || Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.name === symbol)?.balance)>Number(amountToSupply)){ 
+        if(Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.name === symbol)?.balance)>Number(amountToSupply)){ 
           await useBridge(amountToSupply, currentMarketData.chainId, symbol);
         }
         let response: TransactionResponse;
