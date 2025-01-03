@@ -3,7 +3,7 @@ import { USD_DECIMALS, valueToBigNumber } from '@aave/math-utils';
 import { Trans } from '@lingui/macro';
 import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import BigNumber from 'bignumber.js';
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { ListColumn } from 'src/components/lists/ListColumn';
 import { ListHeaderTitle } from 'src/components/lists/ListHeaderTitle';
 import { ListHeaderWrapper } from 'src/components/lists/ListHeaderWrapper';
@@ -31,6 +31,8 @@ import { ListButtonsColumn } from '../ListButtonsColumn';
 import { ListLoader } from '../ListLoader';
 import { SupplyAssetsListItem } from './SupplyAssetsListItem';
 import { WalletEmptyInfo } from './WalletEmptyInfo';
+import { checkCA } from 'src/services/ca';
+import { set } from 'lodash';
 
 const head = [
   { title: <Trans key="assets">Assets</Trans>, sortKey: 'symbol' },
@@ -227,9 +229,23 @@ export const SupplyAssetsList = () => {
       </ListHeaderWrapper>
     );
   };
+  const [ifCA, setIfCA] = useState(false);
+  // check CA every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if(ifCA==false){
+        setIfCA(await checkCA());
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [
+    
+  ]);
+  
 
-  if (loadingReserves || loading)
+  if ((loadingReserves || loading )|| !ifCA)
     return (
+    console.log("ifCA: ",ifCA),
       <ListLoader
         head={head.map((col) => col.title)}
         title={<Trans>Assets to supply</Trans>}
