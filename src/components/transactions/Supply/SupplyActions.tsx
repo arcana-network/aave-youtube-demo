@@ -71,7 +71,7 @@ export const SupplyActions = React.memo(
     const permitAvailable = tryPermit({ reserveAddress: poolAddress, isWrappedBaseAsset });
     const { sendTx } = useWeb3Context();
     const queryClient = useQueryClient();
-    let isApproved = false;
+
     const [signatureParams, setSignatureParams] = useState<SignedParams | undefined>();
 
     const {
