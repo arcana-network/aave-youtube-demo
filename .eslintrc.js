@@ -12,6 +12,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
     'prettier/prettier': 'off',
+    '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
     'react-hooks/rules-of-hooks': 'off',
     'react-hooks/exhaustive-deps': 'off',
     'simple-import-sort/imports': 'off',
