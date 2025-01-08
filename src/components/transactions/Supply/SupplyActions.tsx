@@ -149,11 +149,20 @@ export const SupplyActions = React.memo(
 
     const action = async () => {
       try {
-        setMainTxState({ ...mainTxState, loading: true });
+        console.log("entered action")
+        // setMainTxState({ ...mainTxState, loading: true });
         const caBalances = useBalance();
-        if(Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.name === symbol)?.balance)>Number(amountToSupply)){ 
-          await useBridge(amountToSupply, currentMarketData.chainId, symbol);
+        setMainTxState({ ...mainTxState, loading: true });
+        console.log(caBalances)
+        console.log("wallet amount", Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance), currentMarketData.chainId)
+        if(Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
+          console.log("entered CA")
+          await useBridge(amountToSupply, currentMarketData.chainId, symbol)?.then((res) => {
+            console.log({ res });
+          }
+            );
         }
+        console.log("moving to supply")
         let response: TransactionResponse;
         let action = ProtocolAction.default;
 

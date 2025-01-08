@@ -122,8 +122,8 @@ export const SuppliedPositionsList = () => {
   if (loading)
     return <ListLoader title={<Trans>Your supplies</Trans>} head={head.map((col) => col.title)} />;
 
-
-  const ca = useCaSdkAuth();
+  // console.log("suppliedPositionsList.tsx: useCaSdkAuth()")
+  // const ca = useCaSdkAuth();
 
   return (
     <ListWrapper

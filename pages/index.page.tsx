@@ -13,6 +13,7 @@ import { useWeb3Context } from '../src/libs/hooks/useWeb3Context';
 import { DashboardContentWrapper } from '../src/modules/dashboard/DashboardContentWrapper';
 import { DashboardTopPanel } from '../src/modules/dashboard/DashboardTopPanel';
 import { useCaSdkAuth } from 'src/services/ca';
+import { CA } from '@arcana/ca-sdk';
 
 export default function Home() {
   const { currentAccount, loading: web3Loading } = useWeb3Context();
@@ -27,12 +28,20 @@ export default function Home() {
     });
   }, [trackEvent]);
 
-  let ca = null;
+  let ca: CA | null = null;
 
-  if(currentAccount) {
-    console.log('currentAccount:', currentAccount);
-    ca = useCaSdkAuth();
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if(ca === null) {
+        console.log('CA not initialized yet');
+        await useCaSdkAuth().then((caSDK) => {
+          ca = caSDK;
+        });
+      } 
+    }, 1000);
+    return () => clearInterval(interval);
   }
+  , []);
 
   return (
     <>

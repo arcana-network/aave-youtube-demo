@@ -36,7 +36,7 @@
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.0"
 
-"@arcana/ca-sdk@^0.0.2":
+"@arcana/ca-sdk@^0.0.2-beta.1":
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/@arcana/ca-sdk/-/ca-sdk-0.0.2.tgz#5d0471b0e504c598ae2de57418c12c6eacff5e6d"
   integrity sha512-2NJWZ5FAu17B03TvdfG1lcfrCxoEj5ygat/4kRiJ6Up+fVklBxxZ6vJrPRHbMgTG1Eg4x6FWCrmsTut4ZdRV8A==

@@ -411,7 +411,8 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({ chil
           tokenSymbol = symbol;
         }
         // use useCAauth function only if user is connected
-        const ca = useCaSdkAuth();
+        // console.log("web3Provider.tsx: useCASDKAuth()")
+        // const ca = useCaSdkAuth();
 
         await injectedProvider.request({
           method: 'wallet_watchAsset',

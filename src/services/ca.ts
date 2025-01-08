@@ -11,7 +11,7 @@ const useCaSdkAuth = async () => {
             if (!caSDK) {
                 console.log('Initializing CA SDK...')
                 caSDK = new CA(provider, {
-                    network: 'dev',
+                    network: 'testnet',
                 })
                 await caSDK.init()
                 balance = await caSDK.getUnifiedBalances()
