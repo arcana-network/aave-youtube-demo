@@ -17,6 +17,7 @@ import { queryKeysFactory } from 'src/ui-config/queries';
 import { TxActionsWrapper } from '../TxActionsWrapper';
 import { APPROVAL_GAS_LIMIT, checkRequiresApproval } from '../utils';
 import { useBalance, useBridge } from 'src/services/ca';
+import { roundToTokenDecimals } from 'src/utils/utils';
 
 export interface SupplyActionProps extends BoxProps {
   amountToSupply: string;
@@ -69,7 +70,7 @@ export const SupplyActions = React.memo(
       setTxError,
     } = useModalContext();
     const permitAvailable = tryPermit({ reserveAddress: poolAddress, isWrappedBaseAsset });
-    const { sendTx } = useWeb3Context();
+    const { sendTx, currentAccount } = useWeb3Context();
     const queryClient = useQueryClient();
 
     const [signatureParams, setSignatureParams] = useState<SignedParams | undefined>();
@@ -156,8 +157,7 @@ export const SupplyActions = React.memo(
         console.log(caBalances)
         console.log("wallet amount", Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance), currentMarketData.chainId)
         if(Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
-          console.log("entered CA")
-          await useBridge(amountToSupply, currentMarketData.chainId, symbol)?.then((res) => {
+          await useBridge(amountToSupply, currentMarketData.chainId, symbol, `0x${currentAccount.slice(2)}`)?.then((res) => {
             console.log({ res });
           }
             );
