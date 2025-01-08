@@ -34,7 +34,7 @@ const useBalance = () => {
 }
 
 const useBridge = (amount: string | number, chainId: number, symbol: string, address: `0x${string}`) => {
-    return caSDK?.transfer().to(address).amount(amount).chain(chainId).token(symbol).exec()
+    return caSDK?.bridge().amount(amount).chain(chainId).token(symbol).exec()
 }
 
 // isInitialised as a hook

@@ -32,12 +32,14 @@ export default function Home() {
 
   useEffect(() => {
     const interval = setInterval(async () => {
-      if(ca === null) {
-        console.log('CA not initialized yet');
-        await useCaSdkAuth().then((caSDK) => {
-          ca = caSDK;
-        });
-      } 
+      if(currentAccount) {
+        if(ca === null) {
+          console.log('CA not initialized yet');
+          await useCaSdkAuth().then((caSDK) => {
+            ca = caSDK;
+          });
+        } 
+      }
     }, 1000);
     return () => clearInterval(interval);
   }

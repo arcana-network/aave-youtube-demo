@@ -18,6 +18,7 @@ import { TxActionsWrapper } from '../TxActionsWrapper';
 import { APPROVAL_GAS_LIMIT, checkRequiresApproval } from '../utils';
 import { useBalance, useBridge } from 'src/services/ca';
 import { roundToTokenDecimals } from 'src/utils/utils';
+import Decimal from 'decimal.js';
 
 export interface SupplyActionProps extends BoxProps {
   amountToSupply: string;
@@ -154,10 +155,9 @@ export const SupplyActions = React.memo(
         // setMainTxState({ ...mainTxState, loading: true });
         const caBalances = useBalance();
         setMainTxState({ ...mainTxState, loading: true });
-        console.log(caBalances)
-        console.log("wallet amount", Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance), currentMarketData.chainId)
         if(Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
-          await useBridge(amountToSupply, currentMarketData.chainId, symbol, `0x${currentAccount.slice(2)}`)?.then((res) => {
+          const decimalAmount = new Decimal(amountToSupply).sub(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance!).toString();
+          await useBridge(decimalAmount, currentMarketData.chainId, symbol, `0x${currentAccount.slice(2)}`)?.then((res) => {
             console.log({ res });
           }
             );
