@@ -30,15 +30,18 @@ export default function Home() {
 
   let ca: CA | null = null;
 
+  if(currentAccount) {
+    useCaSdkAuth().then((caSDK) => {
+      ca = caSDK;
+    });
+  }
+
   useEffect(() => {
     const interval = setInterval(async () => {
       if(currentAccount) {
-        if(ca === null) {
-          console.log('CA not initialized yet');
           await useCaSdkAuth().then((caSDK) => {
             ca = caSDK;
           });
-        } 
       }
     }, 1000);
     return () => clearInterval(interval);
