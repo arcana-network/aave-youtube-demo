@@ -13,8 +13,8 @@ import { RightHelperText } from './FlowCommons/RightHelperText';
 interface TxActionsWrapperProps extends BoxProps {
   actionInProgressText: ReactNode;
   actionText: ReactNode;
-  intentActionInProgressText: ReactNode;
-  intentActionText: ReactNode;
+  intentActionInProgressText?: ReactNode;
+  intentActionText?: ReactNode;
   amount?: string;
   approvalTxState?: TxStateType;
   handleApproval?: () => Promise<void>;
