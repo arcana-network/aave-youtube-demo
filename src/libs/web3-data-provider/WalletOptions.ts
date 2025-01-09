@@ -89,7 +89,7 @@ export const getWallet = (
       return new WalletLinkConnector({
         appName: APP_NAME,
         appLogoUrl: APP_LOGO_URL,
-        url: networkConfig.privateJsonRPCUrl || networkConfig.publicJsonRPCUrl[0],
+        url: networkConfig.publicJsonRPCUrl[0],
       });
     case WalletType.WALLET_CONNECT:
       return new WalletConnectConnector(currentChainId);

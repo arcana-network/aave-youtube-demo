@@ -170,9 +170,9 @@ export const getProvider = (chainId: ChainId): ProviderWithSend => {
   if (!providers[chainId]) {
     const config = getNetworkConfig(chainId);
     const chainProviders: string[] = [];
-    if (config.privateJsonRPCUrl) {
-      chainProviders.push(config.privateJsonRPCUrl);
-    }
+    // if (config.privateJsonRPCUrl) {
+    //   chainProviders.push(config.privateJsonRPCUrl);
+    // }
     if (config.publicJsonRPCUrl.length) {
       config.publicJsonRPCUrl.map((rpc) => chainProviders.push(rpc));
     }
