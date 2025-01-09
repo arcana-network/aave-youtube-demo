@@ -114,8 +114,10 @@ export interface ModalContextType<T extends ModalArgsType> {
   type?: ModalType;
   args: T;
   mainTxState: TxStateType;
+  intentTxState: TxStateType;
   approvalTxState: TxStateType;
   setApprovalTxState: (data: TxStateType) => void;
+  setIntentTxState: (data: TxStateType) => void;
   setMainTxState: (data: TxStateType) => void;
   gasLimit: string;
   setGasLimit: (limit: string) => void;
@@ -137,6 +139,7 @@ export const ModalContextProvider: React.FC = ({ children }) => {
   const [args, setArgs] = useState<ModalArgsType>({});
   const [approvalTxState, setApprovalTxState] = useState<TxStateType>({});
   const [mainTxState, setMainTxState] = useState<TxStateType>({});
+  const [intentTxState, setIntentTxState] = useState<TxStateType>({});
   const [gasLimit, setGasLimit] = useState<string>('');
   const [loadingTxns, setLoadingTxns] = useState(false);
   const [txError, setTxError] = useState<TxErrorType>();
@@ -327,6 +330,7 @@ export const ModalContextProvider: React.FC = ({ children }) => {
           setType(undefined);
           setArgs({});
           setMainTxState({});
+          setIntentTxState({});
           setApprovalTxState({});
           setGasLimit('');
           setTxError(undefined);
@@ -340,8 +344,10 @@ export const ModalContextProvider: React.FC = ({ children }) => {
         args,
         approvalTxState,
         mainTxState,
+        intentTxState: intentTxState || {},
         setApprovalTxState,
         setMainTxState,
+        setIntentTxState,
         gasLimit,
         setGasLimit,
         loadingTxns,

@@ -53,7 +53,7 @@ import { IsolationModeWarning } from '../Warnings/IsolationModeWarning';
 import { SNXWarning } from '../Warnings/SNXWarning';
 import { SupplyActions } from './SupplyActions';
 import { SupplyWrappedTokenActions } from './SupplyWrappedTokenActions';
-import { useBalance } from 'src/services/ca';
+import { useBalance, useCaIntent } from 'src/services/ca';
 
 export enum ErrorType {
   CAP_REACHED,
@@ -147,7 +147,7 @@ export const SupplyModalContent = React.memo(
   }: SupplyModalContentProps) => {
     const { marketReferencePriceInUsd } = useAppDataContext();
     const { currentMarketData, currentNetworkConfig } = useProtocolDataContext();
-    const { mainTxState: supplyTxState, gasLimit, txError } = useModalContext();
+    const { mainTxState: supplyTxState, gasLimit, txError, intentTxState } = useModalContext();
     const minRemainingBaseTokenBalance = useRootStore(
       (state) => state.poolComputed.minRemainingBaseTokenBalance
     );
@@ -254,7 +254,39 @@ export const SupplyModalContent = React.memo(
           }}
         />
 
-        <TxModalDetails gasLimit={gasLimit} skipLoad={true} disabled={Number(amount) === 0}>
+        {
+          (intentTxState.success && !supplyTxState.success) ? (
+            // display useCaIntent().intent data in a div
+            <div>
+              <h1>Intent details</h1>
+                <h3> Destination Chain: {useCaIntent()?.intent?.destination.chainName}
+                <br></br>
+                Spend: {useCaIntent()?.intent?.sourcesTotal} {useCaIntent()?.intent?.token.symbol}
+                <br></br>
+                {useCaIntent()?.intent?.sources.map((source, index) => {
+                  return (
+                    <h5 key={index}>
+                      {source.chainName}: {source.amount} {useCaIntent()?.intent?.token.symbol}
+                    </h5>
+                  )
+                })
+              }
+              Total Fees: {useCaIntent()?.intent?.fees.total} {useCaIntent()?.intent?.token.symbol}
+              <h5>
+              CA Gas Fees: {useCaIntent()?.intent?.fees.caGas} {useCaIntent()?.intent?.token.symbol}
+              <br></br>
+              Solver Fees: {useCaIntent()?.intent?.fees.solver} {useCaIntent()?.intent?.token.symbol}
+              <br></br>
+              Protocol Fees: {useCaIntent()?.intent?.fees.protocol} {useCaIntent()?.intent?.token.symbol}
+              <br></br>
+              Gas Supplied: {useCaIntent()?.intent?.fees.gasSupplied} {useCaIntent()?.intent?.token.symbol}
+              </h5> </h3>
+              
+            </div>
+          )
+          :
+          (
+            <TxModalDetails gasLimit={gasLimit} skipLoad={true} disabled={Number(amount) === 0}>
           <DetailsNumberLine description={<Trans>Supply APY</Trans>} value={supplyApy} percent />
           <DetailsIncentivesLine
             incentives={poolReserve.aIncentivesData}
@@ -267,6 +299,8 @@ export const SupplyModalContent = React.memo(
             futureHealthFactor={healfthFactorAfterSupply.toString()}
           />
         </TxModalDetails>
+          )
+        }
 
         {txError && <GasEstimationError txError={txError} />}
 

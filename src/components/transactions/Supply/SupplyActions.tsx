@@ -1,4 +1,4 @@
-import { gasLimitRecommendations, ProtocolAction } from '@aave/contract-helpers';
+import { ChainId, gasLimitRecommendations, ProtocolAction } from '@aave/contract-helpers';
 import { TransactionResponse } from '@ethersproject/providers';
 import { Trans } from '@lingui/macro';
 import { BoxProps } from '@mui/material';
@@ -16,9 +16,10 @@ import { queryKeysFactory } from 'src/ui-config/queries';
 
 import { TxActionsWrapper } from '../TxActionsWrapper';
 import { APPROVAL_GAS_LIMIT, checkRequiresApproval } from '../utils';
-import { useBalance, useBridge } from 'src/services/ca';
+import { clearCaIntent, useBalance, useBridge, useCaIntent, useCaSdkAuth } from 'src/services/ca';
 import { roundToTokenDecimals } from 'src/utils/utils';
 import Decimal from 'decimal.js';
+import { useWalletBalances } from 'src/hooks/app-data-provider/useWalletBalances';
 
 export interface SupplyActionProps extends BoxProps {
   amountToSupply: string;
@@ -63,8 +64,10 @@ export const SupplyActions = React.memo(
     const {
       approvalTxState,
       mainTxState,
+      intentTxState,
       loadingTxns,
       setLoadingTxns,
+      setIntentTxState,
       setApprovalTxState,
       setMainTxState,
       setGasLimit,
@@ -73,7 +76,7 @@ export const SupplyActions = React.memo(
     const permitAvailable = tryPermit({ reserveAddress: poolAddress, isWrappedBaseAsset });
     const { sendTx, currentAccount } = useWeb3Context();
     const queryClient = useQueryClient();
-
+  const { walletBalances } = useWalletBalances(currentMarketData);
     const [signatureParams, setSignatureParams] = useState<SignedParams | undefined>();
 
     const {
@@ -153,15 +156,6 @@ export const SupplyActions = React.memo(
       try {
         console.log("entered action")
         // setMainTxState({ ...mainTxState, loading: true });
-        const caBalances = useBalance();
-        setMainTxState({ ...mainTxState, loading: true });
-        if(Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
-          const decimalAmount = new Decimal(amountToSupply).sub(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance!).toString();
-          await useBridge(decimalAmount, currentMarketData.chainId, symbol, `0x${currentAccount.slice(2)}`)?.then((res) => {
-            console.log({ res });
-          }
-            );
-        }
         console.log("moving to supply")
         let response: TransactionResponse;
         let action = ProtocolAction.default;
@@ -216,13 +210,70 @@ export const SupplyActions = React.memo(
           loading: false,
         });
       }
+    
     };
+    let proceed = false;
+    let counter = 0;
+    
+    useEffect(() => {
+      const interval = setInterval(async () => {
+        if(useCaIntent().open){
+          console.log("CA Intent open")
+          setIntentTxState({ ...intentTxState, loading: false, success: true });
+        }
+        if(useCaIntent().completed){
+          console.log("CA Intent completed")
+          proceed = true;
+          if(counter === 0){
+            const caSdkAuth = await useCaSdkAuth();
+            const caBalances = caSdkAuth?.getUnifiedBalances();
+            if((Number((await caBalances)?.find((balance: { symbol: string; }) => balance.symbol === symbol)?.breakdown.find((breakdown: { chain: { id: ChainId; }; }) => breakdown.chain.id === currentMarketData.chainId)?.balance))>=Number(amountToSupply)){
+              counter++;
+              await action();
+            }
+          }
+        }
+      }
+      , 1000);
+      return () => clearInterval(interval);
+    }
+    , [])
+
+    const intentAction = async () => {
+      try {
+        const caBalances = useBalance();
+          setIntentTxState({ ...intentTxState, loading: true, success: false });
+          if(Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
+            const decimalAmount = new Decimal(amountToSupply).sub(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance!).toString();
+            await useBridge(decimalAmount, currentMarketData.chainId, symbol)?.then((res) => {
+              console.log("CA completed")
+              console.log({ res });
+            });
+            await action();
+          }
+      } catch (error) {
+        const parsedError = getErrorTextFromError(error, TxAction.GAS_ESTIMATION, false);
+        setTxError(parsedError);
+        setMainTxState({
+          txHash: undefined,
+          loading: false,
+        });
+      }
+    }
+
+    const confirm = async () => {
+      useCaIntent().allow();
+      // check if transaction has gone through
+      setMainTxState({ ...mainTxState, loading: true });
+      clearCaIntent();
+    }
 
     return (
       <TxActionsWrapper
         blocked={blocked}
         mainTxState={mainTxState}
         approvalTxState={approvalTxState}
+        intentTxState={intentTxState}
         isWrongNetwork={isWrongNetwork}
         requiresAmount
         amount={amountToSupply}
@@ -230,8 +281,11 @@ export const SupplyActions = React.memo(
         preparingTransactions={loadingTxns || !approvedAmount}
         actionText={<Trans>Supply {symbol}</Trans>}
         actionInProgressText={<Trans>Supplying {symbol}</Trans>}
+        intentActionText={<Trans>Confirm </Trans>}
+        intentActionInProgressText={<Trans>Processing</Trans>}
         handleApproval={ifApprove}
-        handleAction={action}
+        handleAction={intentAction}
+        handleConfirm={confirm}
         requiresApproval={requiresApproval}
         tryPermit={permitAvailable}
         sx={sx}

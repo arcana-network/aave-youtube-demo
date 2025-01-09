@@ -13,12 +13,16 @@ import { RightHelperText } from './FlowCommons/RightHelperText';
 interface TxActionsWrapperProps extends BoxProps {
   actionInProgressText: ReactNode;
   actionText: ReactNode;
+  intentActionInProgressText: ReactNode;
+  intentActionText: ReactNode;
   amount?: string;
   approvalTxState?: TxStateType;
   handleApproval?: () => Promise<void>;
   handleAction: () => Promise<void>;
+  handleConfirm?: () => void;
   isWrongNetwork: boolean;
   mainTxState: TxStateType;
+  intentTxState?: TxStateType;
   preparingTransactions: boolean;
   requiresAmount?: boolean;
   requiresApproval: boolean;
@@ -41,10 +45,14 @@ export const TxActionsWrapper = ({
   amount,
   approvalTxState,
   handleApproval,
+  intentActionInProgressText,
   handleAction,
+  handleConfirm,
   isWrongNetwork,
   mainTxState,
+  intentTxState,
   preparingTransactions,
+  intentActionText,
   requiresAmount,
   requiresApproval,
   sx,
@@ -82,6 +90,12 @@ export const TxActionsWrapper = ({
       return { loading: true, disabled: true, content: actionInProgressText };
     if (requiresApproval && !approvalTxState?.success)
       return { disabled: true, content: actionText };
+
+    if (intentTxState?.loading)
+      return { loading: true, disabled: true, content: intentActionInProgressText };
+    if (intentTxState?.success && !mainTxState?.success)
+      return {loading: false, disabled:false, content: intentActionText, handleClick: handleConfirm};
+
     return { content: actionText, handleClick: handleAction };
   }
 
