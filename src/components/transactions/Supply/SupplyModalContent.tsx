@@ -266,19 +266,19 @@ export const SupplyModalContent = React.memo(
             (<h3>Loading ...</h3>)
             : (
               !steps.steps[1].done ?
-              (<h3>{steps.steps[0].type}</h3>)
+              (<h3>✅{steps.steps[0].type}</h3>)
               : (
                 !steps.steps[2].done ?
-                (<h3>{steps.steps[1].type}</h3>)
+                (<h3>✅{steps.steps[1].type}</h3>)
                 : (
                   !steps.steps[3].done ?
-                  (<h3>{steps.steps[2].type}</h3>)
+                  (<h3>✅{steps.steps[2].type}</h3>)
                   : (
                     !steps.steps[4].done ?
-                    (<h3>{steps.steps[3].type}</h3>)
+                    (<h3>✅{steps.steps[3].type}</h3>)
                     : (
                       !steps.steps[5].done ?
-                      (<h3>{steps.steps[4].type}</h3>) : (<h3>{steps.steps[5].type}</h3>)
+                      (<h3>✅{steps.steps[4].type}</h3>) : (<h3>✅{steps.steps[5].type}</h3>)
                     )
                   )     
                 )
