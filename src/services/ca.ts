@@ -1,4 +1,4 @@
-import { CA, Intent } from '@arcana/ca-sdk'
+import { CA, Intent, ProgressStep } from '@arcana/ca-sdk'
 import { AllowanceHookInput, EthereumProvider } from '@arcana/ca-sdk/dist/types/typings'
 import { NullValueNode } from 'graphql'
 
@@ -44,6 +44,43 @@ let caIntent : {
     completed: false
   };
 
+  let state : {
+    inProgress: boolean,
+    completed: boolean
+    steps: Array<ProgressStep & { done: boolean }>
+  }
+    = {
+        inProgress: false,
+        completed: false,
+        steps: []
+    }
+
+
+  const eventListener = (data: any) => {
+    switch (data.type) {
+      case "EXPECTED_STEPS": {
+        console.log("Expected steps", data.data)
+        state.steps = data.data.map((s: ProgressStep) => ({ ...s, done: false }))
+        state.inProgress = true
+        break;
+      }
+      case "STEP_DONE": {
+        console.log("Step done", data.data)
+        const v = state.steps.find(s => {
+          return s.typeID === data.data.typeID
+        })
+        console.log({ v })
+        if (v) {
+          v.done = true
+          if (data.data.data) {
+            v.data = data.data.data
+          }
+        }
+        break;
+      }
+    }
+  }
+
 
 const useCaSdkAuth = async () => {
     const initializeCA = async (provider: EthereumProvider) => {
@@ -53,11 +90,12 @@ const useCaSdkAuth = async () => {
                 caSDK = new CA(provider, {
                     network: 'testnet',
                 })
+                caSDK.addCAEventListener(eventListener)
                 await caSDK.init()
                 balance = await caSDK.getUnifiedBalances()
                 isInitialized = true
                 console.log('CA SDK initialized')
-                console.log("event listener", caSDK.caEvents.eventNames())
+                console.log("event listener", caSDK.caEvents.eventNames)
                 caSDK.setOnAllowanceHook(async ({allow, deny, sources}) => {
                     allowance.allow = allow;
                     allowance.deny = deny;
@@ -119,7 +157,11 @@ const clearCaIntent = () => {
     caIntent.intentRefreshing = false;
 }
 
+const useCaState = () => {
+    return state
+}
 
 
 
-export { useCaSdkAuth, useBalance, useBridge, checkCA, useAllowance, useCaIntent, clearCaIntent }
+
+export { useCaSdkAuth, useBalance, useBridge, checkCA, useAllowance, useCaIntent, clearCaIntent, useCaState }

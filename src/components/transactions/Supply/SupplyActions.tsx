@@ -76,9 +76,10 @@ export const SupplyActions = React.memo(
     const permitAvailable = tryPermit({ reserveAddress: poolAddress, isWrappedBaseAsset });
     const { sendTx, currentAccount } = useWeb3Context();
     const queryClient = useQueryClient();
+    
   const { walletBalances } = useWalletBalances(currentMarketData);
     const [signatureParams, setSignatureParams] = useState<SignedParams | undefined>();
-
+    
     const {
       data: approvedAmount,
       refetch: fetchApprovedAmount,
@@ -227,7 +228,9 @@ export const SupplyActions = React.memo(
           if(counter === 0){
             const caSdkAuth = await useCaSdkAuth();
             const caBalances = caSdkAuth?.getUnifiedBalances();
-            if((Number((await caBalances)?.find((balance: { symbol: string; }) => balance.symbol === symbol)?.breakdown.find((breakdown: { chain: { id: ChainId; }; }) => breakdown.chain.id === currentMarketData.chainId)?.balance))>=Number(amountToSupply)){
+            console.log("balance available: ",(Number((await caBalances)?.find((balance: { symbol: string; }) => balance.symbol === symbol)?.breakdown.find((breakdown: { chain: { id: ChainId; }; }) => breakdown.chain.id === currentMarketData.chainId)?.balance)));
+            console.log("Wallet Balance", walletBalances[0].amount)
+            if(Number(walletBalances[0].amount)>=Number(amountToSupply)){
               counter++;
               await action();
             }

@@ -53,7 +53,7 @@ import { IsolationModeWarning } from '../Warnings/IsolationModeWarning';
 import { SNXWarning } from '../Warnings/SNXWarning';
 import { SupplyActions } from './SupplyActions';
 import { SupplyWrappedTokenActions } from './SupplyWrappedTokenActions';
-import { useBalance, useCaIntent } from 'src/services/ca';
+import { useBalance, useCaIntent, useCaState } from 'src/services/ca';
 
 export enum ErrorType {
   CAP_REACHED,
@@ -148,6 +148,9 @@ export const SupplyModalContent = React.memo(
     const { marketReferencePriceInUsd } = useAppDataContext();
     const { currentMarketData, currentNetworkConfig } = useProtocolDataContext();
     const { mainTxState: supplyTxState, gasLimit, txError, intentTxState } = useModalContext();
+    let state = useCaState();
+    const [steps, setSteps] = useState(state);
+    console.log("Steps state: ",steps.steps[0])
     const minRemainingBaseTokenBalance = useRootStore(
       (state) => state.poolComputed.minRemainingBaseTokenBalance
     );
@@ -257,7 +260,33 @@ export const SupplyModalContent = React.memo(
         {
           (intentTxState.success && !supplyTxState.success) ? (
             // display useCaIntent().intent data in a div
-            <div>
+            (supplyTxState.loading) ? 
+            (
+              !steps.steps[0].done ?
+            (<h3>Loading ...</h3>)
+            : (
+              !steps.steps[1].done ?
+              (<h3>{steps.steps[0].type}</h3>)
+              : (
+                !steps.steps[2].done ?
+                (<h3>{steps.steps[1].type}</h3>)
+                : (
+                  !steps.steps[3].done ?
+                  (<h3>{steps.steps[2].type}</h3>)
+                  : (
+                    !steps.steps[4].done ?
+                    (<h3>{steps.steps[3].type}</h3>)
+                    : (
+                      !steps.steps[5].done ?
+                      (<h3>{steps.steps[4].type}</h3>) : (<h3>{steps.steps[5].type}</h3>)
+                    )
+                  )     
+                )
+              )
+            )
+            )
+            :
+            (<div>
               <h1>Intent details</h1>
                 <h3> Destination Chain: {useCaIntent()?.intent?.destination.chainName}
                 <br></br>
@@ -283,6 +312,7 @@ export const SupplyModalContent = React.memo(
               </h5> </h3>
               
             </div>
+            )
           )
           :
           (
@@ -498,7 +528,6 @@ export const SupplyWrappedTokenModalContent = ({
       </TxModalDetails>
 
       {txError && <GasEstimationError txError={txError} />}
-
       {supplyingWrappedToken ? (
         <SupplyWrappedTokenActions
           tokenWrapperAddress={wrappedTokenConfig.tokenWrapperAddress}
