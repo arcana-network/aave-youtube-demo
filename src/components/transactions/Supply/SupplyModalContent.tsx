@@ -148,8 +148,8 @@ export const SupplyModalContent = React.memo(
     const { marketReferencePriceInUsd } = useAppDataContext();
     const { currentMarketData, currentNetworkConfig } = useProtocolDataContext();
     const { mainTxState: supplyTxState, gasLimit, txError, intentTxState } = useModalContext();
-    let state = useCaState();
-    const [steps, setSteps] = useState(state);
+
+    const [steps, setSteps] = useState(useCaState());
     console.log("Steps state: ",steps.steps[0])
     const minRemainingBaseTokenBalance = useRootStore(
       (state) => state.poolComputed.minRemainingBaseTokenBalance
