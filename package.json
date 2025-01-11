@@ -33,7 +33,7 @@
   "dependencies": {
     "@aave/contract-helpers": "1.30.5",
     "@aave/math-utils": "1.30.5",
-    "@arcana/ca-sdk": "^0.0.3-beta.1",
+    "@arcana/ca-sdk": "^0.0.3-beta.2",
     "@bgd-labs/aave-address-book": "4.5.0",
     "@emotion/cache": "11.10.3",
     "@emotion/react": "11.10.4",
