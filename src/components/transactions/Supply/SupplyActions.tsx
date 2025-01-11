@@ -238,6 +238,10 @@ export const SupplyActions = React.memo(
             });
             await action();
           }
+          else{
+            console.log("CA not required")
+            await action();
+          }
       } catch (error) {
         const parsedError = getErrorTextFromError(error, TxAction.GAS_ESTIMATION, false);
         setTxError(parsedError);
