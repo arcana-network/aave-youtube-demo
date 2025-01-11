@@ -56,7 +56,7 @@ let caIntent : {
     }
 
 
-  const eventListener = (data: any) => {
+  const eventListener = async (data: any) => {
     switch (data.type) {
       case "EXPECTED_STEPS": {
         console.log("Expected steps", data.data)
@@ -69,6 +69,12 @@ let caIntent : {
         const v = state.steps.find(s => {
           return s.typeID === data.data.typeID
         })
+        if(data.data.typeID=="IF"){
+            await caSDK?.getUnifiedBalances().then((res) => {
+                console.log("balance refreshed: ", res);
+                balance = res;
+            });
+        }
         console.log({ v })
         if (v) {
           v.done = true
