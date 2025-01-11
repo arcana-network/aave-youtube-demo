@@ -20,6 +20,7 @@ import { clearCaIntent, useBalance, useBridge, useCaIntent, useCaSdkAuth } from 
 import { roundToTokenDecimals } from 'src/utils/utils';
 import Decimal from 'decimal.js';
 import { useWalletBalances } from 'src/hooks/app-data-provider/useWalletBalances';
+import { CA } from '@arcana/ca-sdk';
 
 export interface SupplyActionProps extends BoxProps {
   amountToSupply: string;
@@ -230,7 +231,9 @@ export const SupplyActions = React.memo(
       try {
         const caBalances = useBalance();
           setIntentTxState({ ...intentTxState, loading: true, success: false });
-          if(Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
+          if(            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId))
+          &&
+          Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
             const decimalAmount = new Decimal(amountToSupply).sub(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance!).toString();
             await useBridge(decimalAmount, currentMarketData.chainId, symbol)?.then((res) => {
               console.log("CA completed")

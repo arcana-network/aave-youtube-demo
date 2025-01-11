@@ -33,6 +33,7 @@ import { SupplyAssetsListItem } from './SupplyAssetsListItem';
 import { WalletEmptyInfo } from './WalletEmptyInfo';
 import { checkCA, useBalance } from 'src/services/ca';
 import { set } from 'lodash';
+import { CA } from '@arcana/ca-sdk';
 
 const head = [
   { title: <Trans key="assets">Assets</Trans>, sortKey: 'symbol' },
@@ -172,7 +173,9 @@ export const SupplyAssetsList = () => {
   const caBalances = useBalance();
 
   const filteredSupplyReserves = sortedSupplyReserves.filter((reserve) => {
-    reserve.availableToDepositUSD = caBalances?.find((balance) => balance.symbol === reserve.symbol)?.balanceInFiat?.toString() || '0';
+    if(CA.getSupportedChains().find((chain) => chain.id === currentChainId)){
+      reserve.availableToDepositUSD = caBalances?.find((balance) => balance.symbol === reserve.symbol)?.balanceInFiat?.toString() || '0';
+    }
     if (reserve.availableToDepositUSD !== '0') {
       return true;
     }

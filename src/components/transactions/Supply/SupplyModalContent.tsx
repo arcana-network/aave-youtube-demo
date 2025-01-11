@@ -54,6 +54,8 @@ import { SNXWarning } from '../Warnings/SNXWarning';
 import { SupplyActions } from './SupplyActions';
 import { SupplyWrappedTokenActions } from './SupplyWrappedTokenActions';
 import { useBalance, useCaIntent, useCaState } from 'src/services/ca';
+import { CA } from '@arcana/ca-sdk';
+import { current } from 'immer';
 
 export enum ErrorType {
   CAP_REACHED,
@@ -244,7 +246,10 @@ export const SupplyModalContent = React.memo(
           symbol={supplyUnWrapped ? currentNetworkConfig.baseAssetSymbol : poolReserve.symbol}
           assets={[
             {
-              balance: (balances?.find((b) => b.symbol === poolReserve.symbol)?.balance),
+              balance: (    CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId) ?
+
+                balances?.find((b) => b.symbol === poolReserve.symbol)?.balance : maxAmountToSupply
+              ),
               symbol: supplyUnWrapped ? currentNetworkConfig.baseAssetSymbol : poolReserve.symbol,
               iconSymbol: supplyUnWrapped
                 ? currentNetworkConfig.baseAssetSymbol
@@ -254,7 +259,10 @@ export const SupplyModalContent = React.memo(
           capType={CapType.supplyCap}
           isMaxSelected={isMaxSelected}
           disabled={supplyTxState.loading}
-          maxValue={balances?.find((b) => (b.symbol === poolReserve.symbol)|| (poolReserve.symbol === 'WETH' && b.symbol === 'ETH'))?.balance }
+          maxValue={
+            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)) ?
+            balances?.find((b) => (b.symbol === poolReserve.symbol)|| (poolReserve.symbol === 'WETH' && b.symbol === 'ETH'))?.balance  : maxAmountToSupply
+          }
           balanceText={<Trans>Unified token balance</Trans>}
           event={{
             eventName: GENERAL.MAX_INPUT_SELECTION,

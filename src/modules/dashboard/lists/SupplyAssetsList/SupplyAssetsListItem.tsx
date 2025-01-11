@@ -45,6 +45,7 @@ import { ListMobileItemWrapper } from '../ListMobileItemWrapper';
 import { ListValueColumn } from '../ListValueColumn';
 import { ListValueRow } from '../ListValueRow';
 import { useBalance } from 'src/services/ca';
+import { CA } from '@arcana/ca-sdk';
 export const SupplyAssetsListItem = (
   params: DashboardReserve & { walletBalances: WalletBalancesMap }
 ) => {
@@ -127,7 +128,7 @@ export const SupplyAssetsListItemDesktop = ({
     setAnchorEl(null);
   };
 
-  const balances = useBalance();
+  const caBalances = useBalance();
 
   const wrappedToken = wrappedTokenReserves.find(
     (r) => r.tokenOut.underlyingAsset === underlyingAsset
@@ -206,10 +207,20 @@ export const SupplyAssetsListItemDesktop = ({
       ) : (
         <ListValueColumn
           symbol={symbol}
-          value={Number((balances?.find((b) => b.symbol === symbol)?.balance)! || walletBalance)}
-          subValue={balances?.find((b) => b.symbol === symbol)?.balanceInFiat || walletBalanceUSD}
+          value={
+                        (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)) ?
+            Number((caBalances?.find((b) => b.symbol === symbol)?.balance)! || walletBalance) : walletBalance
+          }
+          subValue={
+            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)) ?
+            caBalances?.find((b) => b.symbol === symbol)?.balanceInFiat || walletBalanceUSD : walletBalanceUSD
+          }
           withTooltip
-          disabled={Number((balances?.find((b) => b.symbol === symbol)?.balance)! || walletBalance) === 0 || isMaxCapReached}
+          disabled={
+            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)) ?
+            Number((caBalances?.find((b) => b.symbol === symbol)?.balance)! || walletBalance) === 0 || isMaxCapReached
+            : walletBalance === '0' || isMaxCapReached
+          }
           capsComponent={
             <CapsHint
               capType={CapType.supplyCap}
@@ -244,7 +255,10 @@ export const SupplyAssetsListItemDesktop = ({
         <Button
           disabled={
             // find balance of current token from balances variavlbe
-            !(balances?.find((b) => b.symbol === symbol)?.balanceInFiat! > 0)
+            !(
+              (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)) ?
+              caBalances?.find((b) => b.symbol === symbol)?.balanceInFiat! > 0 : disableSupply
+            )
           }
           variant="contained"
           onClick={() => {
@@ -332,6 +346,7 @@ export const SupplyAssetsListItemMobile = ({
   walletBalancesMap,
 }: SupplyAssetsListItemProps) => {
   const { currentMarket } = useProtocolDataContext();
+  const currentMarketData = useRootStore((store) => store.currentMarketData);
   const { openSupply } = useModalContext();
   const wrappedTokenReserves = useWrappedTokens();
 
@@ -343,7 +358,7 @@ export const SupplyAssetsListItemMobile = ({
     (r) => r.tokenOut.underlyingAsset === underlyingAsset
   );
 
-  const caBalance = useBalance();
+  const caBalances = useBalance();
 
 
   return (
@@ -408,9 +423,18 @@ export const SupplyAssetsListItemMobile = ({
       ) : (
         <ListValueRow
           title={<Trans>Supply balance</Trans>}
-          value={Number(caBalance?.find((b) => b.symbol === symbol)?.balance || walletBalance)}
-          subValue={caBalance?.find((b) => b.symbol === symbol)?.balanceInFiat || walletBalanceUSD}
-          disabled={Number(caBalance?.find((b) => b.symbol === symbol)?.balance || walletBalance) === 0 || isMaxCapReached}
+          value={
+            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)) ?
+            Number(caBalances?.find((b) => b.symbol === symbol)?.balance || walletBalance) : walletBalance
+          }
+          subValue={
+            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)) ?
+            caBalances?.find((b) => b.symbol === symbol)?.balanceInFiat || walletBalanceUSD : walletBalanceUSD
+          }
+          disabled={
+            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)) ?
+            Number(caBalances?.find((b) => b.symbol === symbol)?.balance || walletBalance) === 0 || isMaxCapReached : walletBalance === '0' || isMaxCapReached
+          }
           capsComponent={
             <CapsHint
               capType={CapType.supplyCap}
