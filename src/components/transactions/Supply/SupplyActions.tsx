@@ -213,8 +213,6 @@ export const SupplyActions = React.memo(
       }
     
     };
-    let proceed = false;
-    let counter = 0;
     
     useEffect(() => {
       const interval = setInterval(async () => {
@@ -222,20 +220,6 @@ export const SupplyActions = React.memo(
           console.log("CA Intent open")
           setIntentTxState({ ...intentTxState, loading: false, success: true });
         }
-        // if(useCaIntent().completed){
-        //   console.log("CA Intent completed")
-        //   proceed = true;
-        //   if(counter === 0){
-        //     const caSdkAuth = await useCaSdkAuth();
-        //     const caBalances = caSdkAuth?.getUnifiedBalances();
-        //     console.log("balance available: ",(Number((await caBalances)?.find((balance: { symbol: string; }) => balance.symbol === symbol)?.breakdown.find((breakdown: { chain: { id: ChainId; }; }) => breakdown.chain.id === currentMarketData.chainId)?.balance)));
-        //     console.log("Wallet Balance", walletBalances[0].amount)
-        //     if(Number(walletBalances[0].amount)>=Number(amountToSupply)){
-        //       counter++;
-        //       await action();
-        //     }
-        //   }
-        // }
       }
       , 1000);
       return () => clearInterval(interval);
