@@ -150,7 +150,15 @@ export const SupplyModalContent = React.memo(
     const { mainTxState: supplyTxState, gasLimit, txError, intentTxState } = useModalContext();
 
     const [steps, setSteps] = useState(useCaState());
-    console.log("Steps state: ",steps.steps[0])
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setSteps(useCaState());
+      }
+      , 1000)
+      return () => clearInterval(interval);
+    }
+    , [steps])
+    // console.log("Steps states: ",steps.steps.find((s) => s.done==true))
     const minRemainingBaseTokenBalance = useRootStore(
       (state) => state.poolComputed.minRemainingBaseTokenBalance
     );
@@ -262,22 +270,22 @@ export const SupplyModalContent = React.memo(
             // display useCaIntent().intent data in a div
             (supplyTxState.loading) ? 
             (
-              !steps.steps[0].done ?
+              steps.steps[0].done !=true ?
             (<h3>Loading ...</h3>)
             : (
-              !steps.steps[1].done ?
+              steps.steps[1].done !=true ?
               (<h3>✅{steps.steps[0].type}</h3>)
               : (
-                !steps.steps[2].done ?
+                !steps.steps[2].done !=true ?
                 (<h3>✅{steps.steps[1].type}</h3>)
                 : (
-                  !steps.steps[3].done ?
+                  !steps.steps[3].done !=true ?
                   (<h3>✅{steps.steps[2].type}</h3>)
                   : (
-                    !steps.steps[4].done ?
+                    !steps.steps[4].done !=true ?
                     (<h3>✅{steps.steps[3].type}</h3>)
                     : (
-                      !steps.steps[5].done ?
+                      !steps.steps[5].done !=true ?
                       (<h3>✅{steps.steps[4].type}</h3>) : (<h3>✅{steps.steps[5].type}</h3>)
                     )
                   )     
