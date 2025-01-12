@@ -757,6 +757,10 @@ msgstr "Collector Contract"
 msgid "Collector Info"
 msgstr "Collector Info"
 
+#: src/components/transactions/Supply/SupplyActions.tsx
+msgid "Confirm"
+msgstr "Confirm"
+
 #: src/components/transactions/GovRepresentatives/GovRepresentativesActions.tsx
 msgid "Confirm transaction"
 msgstr "Confirm transaction"
@@ -1858,6 +1862,10 @@ msgstr "Price impact {0}%"
 msgid "Privacy"
 msgstr "Privacy"
 
+#: src/components/transactions/Supply/SupplyActions.tsx
+msgid "Processing"
+msgstr "Processing"
+
 #: src/modules/governance/proposal/ProposalLifecycle.tsx
 msgid "Proposal details"
 msgstr "Proposal details"
@@ -2803,6 +2811,10 @@ msgstr "Underlying asset does not exist in {marketName} v3 Market, hence this po
 msgid "Underlying token"
 msgstr "Underlying token"
 
+#: src/components/transactions/Supply/SupplyModalContent.tsx
+msgid "Unified token balance"
+msgstr "Unified token balance"
+
 #: src/modules/staking/StakingPanel.tsx
 msgid "Unstake"
 msgstr "Unstake"
@@ -3009,7 +3021,6 @@ msgstr "Wallet Balance"
 #: src/components/transactions/Repay/RepayTypeSelector.tsx
 #: src/components/transactions/Stake/StakeModalContent.tsx
 #: src/components/transactions/StakingMigrate/StakingMigrateModalContent.tsx
-#: src/components/transactions/Supply/SupplyModalContent.tsx
 #: src/components/transactions/Supply/SupplyModalContent.tsx
 #: src/modules/dashboard/lists/SupplyAssetsList/SupplyAssetsList.tsx
 #: src/modules/faucet/FaucetAssetsList.tsx
