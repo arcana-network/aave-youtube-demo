@@ -250,7 +250,7 @@ export const SupplyActions = React.memo(
 
     const intentAction = async () => {
       try {
-        const caBalances = useBalance();
+        const caBalances = useBalance(true);
           setIntentTxState({ ...intentTxState, loading: true, success: false });
           if(            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId))
           &&

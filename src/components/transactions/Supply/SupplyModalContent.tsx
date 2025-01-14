@@ -164,7 +164,7 @@ export const SupplyModalContent = React.memo(
     useEffect(() => {
       const interval = setInterval(() => {
         setSteps(useCaState());
-      }, 1000);
+      }, 500);
       return () => clearInterval(interval);
     }, [steps]);
     // console.log("Steps states: ",steps.steps.find((s) => s.done==true))
@@ -178,7 +178,7 @@ export const SupplyModalContent = React.memo(
     const supplyUnWrapped = underlyingAsset.toLowerCase() === API_ETH_MOCK_ADDRESS.toLowerCase();
 
     const walletBalance = supplyUnWrapped ? nativeBalance : tokenBalance;
-    const balances = useBalance();
+    const balances = useBalance(true);
     const supplyApy = poolReserve.supplyAPY;
     const { supplyCap, totalLiquidity, isFrozen, decimals, debtCeiling, isolationModeTotalDebt } =
       poolReserve;

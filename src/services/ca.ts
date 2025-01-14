@@ -134,7 +134,14 @@ const useCaSdkAuth = async () => {
 }
 
 
-const useBalance = () => {
+const useBalance = (
+  refresh: boolean = false
+) => {
+    if(refresh){
+        caSDK?.getUnifiedBalances().then((res) => {
+            balance = res;
+        });
+    }
     return balance;
 }
 

@@ -128,7 +128,7 @@ export const SupplyAssetsListItemDesktop = ({
     setAnchorEl(null);
   };
 
-  const caBalances = useBalance();
+  const caBalances = useBalance(true);
 
   const wrappedToken = wrappedTokenReserves.find(
     (r) => r.tokenOut.underlyingAsset === underlyingAsset
@@ -360,7 +360,7 @@ export const SupplyAssetsListItemMobile = ({
     (r) => r.tokenOut.underlyingAsset === underlyingAsset
   );
 
-  const caBalances = useBalance();
+  const caBalances = useBalance(true);
 
 
   return (
