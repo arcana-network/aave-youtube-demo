@@ -1,6 +1,10 @@
 import { CA, Intent, ProgressStep } from '@arcana/ca-sdk'
 import { AllowanceHookInput, EthereumProvider } from '@arcana/ca-sdk/dist/types/typings'
 import { NullValueNode } from 'graphql'
+import { useModalContext } from 'src/hooks/useModal'
+
+
+
 
 
 let caSDK: CA | null = null
@@ -103,12 +107,12 @@ const useCaSdkAuth = async () => {
                 console.log('CA SDK initialized')
                 console.log("event listener", caSDK.caEvents.eventNames)
                 caSDK.setOnAllowanceHook(async ({allow, deny, sources}) => {
+                  console.log("allowance hook: ", {allow, deny, sources})
                     allowance.allow = allow;
                     allowance.deny = deny;
                     allowance.open = true;
                     allowance.data = sources;
                     allowance.allowances = ["max"];
-                    
                 });
                 caSDK.setOnIntentHook(({intent, allow, deny, refresh}) => {
                     console.log('intent hook', {intent})

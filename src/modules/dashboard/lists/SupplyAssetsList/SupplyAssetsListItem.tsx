@@ -164,6 +164,7 @@ export const SupplyAssetsListItemDesktop = ({
         ProtocolAction.supply
       )}
     >
+      abcd
       {canSupplyAsWrappedToken && wrappedToken && walletBalance === '0' ? (
         <ListColumn>
           <ContentWithTooltip
@@ -176,6 +177,7 @@ export const SupplyAssetsListItemDesktop = ({
               />
             }
           >
+
             <Box
               sx={{
                 display: 'flex',
@@ -231,7 +233,7 @@ export const SupplyAssetsListItemDesktop = ({
           }
         />
       )}
-
+      
       <ListAPRColumn
         value={Number(supplyAPY)}
         market={currentMarket}

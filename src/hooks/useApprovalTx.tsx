@@ -56,6 +56,7 @@ export const useApprovalTx = ({
     try {
       if (requiresApproval && approvedAmount) {
         if (usePermit) {
+          console.log("usePermit")
           setApprovalTxState({ ...approvalTxState, loading: true });
           const deadline = Math.floor(Date.now() / 1000 + 3600).toString();
           const signatureRequest = await generateSignatureRequest({
@@ -76,25 +77,29 @@ export const useApprovalTx = ({
             success: true,
           });
         } else {
+          console.log("else")
+          console.log("approvedAmount", approvedAmount)
           let approveTxData = generateApproval(
             approvedAmount,
             amountToApprove ? { amount: '0' } : {}
           );
           setApprovalTxState({ ...approvalTxState, loading: true });
           approveTxData = await estimateGasLimit(approveTxData, chainId);
+          console.log("approveTxData", approveTxData)
           const response = await sendTx(approveTxData);
           await response.wait(1);
           setApprovalTxState({
             txHash: response.hash,
             loading: false,
-            success: true,
+            success: true, 
           });
           setTxError(undefined);
+          console.log("adding transaction")
           addTransaction(response.hash, {
             action: ProtocolAction.approval,
             txState: 'success',
             asset: assetAddress,
-            amount: MAX_UINT_AMOUNT,
+            amount: '0',
             assetName: symbol,
           });
           if (onApprovalTxConfirmed) {

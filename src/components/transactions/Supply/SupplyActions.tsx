@@ -16,7 +16,7 @@ import { queryKeysFactory } from 'src/ui-config/queries';
 
 import { TxActionsWrapper } from '../TxActionsWrapper';
 import { APPROVAL_GAS_LIMIT, checkRequiresApproval } from '../utils';
-import { clearCaIntent, useBalance, useBridge, useCaIntent, useCaSdkAuth } from 'src/services/ca';
+import { clearCaIntent, useAllowance, useBalance, useBridge, useCaIntent, useCaSdkAuth } from 'src/services/ca';
 import { roundToTokenDecimals } from 'src/utils/utils';
 import Decimal from 'decimal.js';
 import { useWalletBalances } from 'src/hooks/app-data-provider/useWalletBalances';
@@ -67,6 +67,8 @@ export const SupplyActions = React.memo(
       mainTxState,
       intentTxState,
       loadingTxns,
+      allowanceState,
+      setAllowanceState,
       setLoadingTxns,
       setIntentTxState,
       setApprovalTxState,
@@ -132,6 +134,21 @@ export const SupplyActions = React.memo(
       }
     }
 
+
+    const ifAllowance = async () => {
+      try {
+          useAllowance().open = false;
+          const values = useAllowance().data.map(() => "1.15")
+          const allowance = useAllowance();
+          if (allowance && allowance.allow) {
+            allowance.allow(values);
+          }
+      } catch (error) {
+        const parsedError = getErrorTextFromError(error, TxAction.APPROVAL, false);
+        setTxError(parsedError);
+        setApprovalTxState({ ...approvalTxState, loading: false });
+      }
+    }
     useEffect(() => {
       if (!isFetchedAfterMount) {
         fetchApprovedAmount();
@@ -219,7 +236,11 @@ export const SupplyActions = React.memo(
       const interval = setInterval(async () => {
         if(useCaIntent().open){
           console.log("CA Intent open")
-          setIntentTxState({ ...intentTxState, loading: false, success: true });
+          setIntentTxState({ loading: false, success: true });
+        }
+        if(useAllowance().open){
+          console.log("CA Allowance open")
+          setApprovalTxState({ ...approvalTxState, loading: false, success: true });
         }
       }
       , 1000);
@@ -279,6 +300,7 @@ export const SupplyActions = React.memo(
         intentActionInProgressText={<Trans>Processing</Trans>}
         handleApproval={ifApprove}
         handleAction={intentAction}
+        handleAllowance={ifAllowance}
         handleConfirm={confirm}
         requiresApproval={requiresApproval}
         tryPermit={permitAvailable}

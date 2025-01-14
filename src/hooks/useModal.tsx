@@ -115,9 +115,11 @@ export interface ModalContextType<T extends ModalArgsType> {
   args: T;
   mainTxState: TxStateType;
   intentTxState: TxStateType;
+  allowanceState: TxStateType;
   approvalTxState: TxStateType;
   setApprovalTxState: (data: TxStateType) => void;
   setIntentTxState: (data: TxStateType) => void;
+  setAllowanceState: (data: TxStateType) => void;
   setMainTxState: (data: TxStateType) => void;
   gasLimit: string;
   setGasLimit: (limit: string) => void;
@@ -138,6 +140,7 @@ export const ModalContextProvider: React.FC = ({ children }) => {
   // contains arbitrary key-value pairs as a modal context
   const [args, setArgs] = useState<ModalArgsType>({});
   const [approvalTxState, setApprovalTxState] = useState<TxStateType>({});
+  const [allowanceState, setAllowanceState] = useState<TxStateType>({});
   const [mainTxState, setMainTxState] = useState<TxStateType>({});
   const [intentTxState, setIntentTxState] = useState<TxStateType>({});
   const [gasLimit, setGasLimit] = useState<string>('');
@@ -332,6 +335,7 @@ export const ModalContextProvider: React.FC = ({ children }) => {
           setMainTxState({});
           setIntentTxState({});
           setApprovalTxState({});
+          setAllowanceState({});
           setGasLimit('');
           setTxError(undefined);
           setSwitchNetworkError(undefined);
@@ -343,9 +347,11 @@ export const ModalContextProvider: React.FC = ({ children }) => {
         type,
         args,
         approvalTxState,
+        allowanceState,
         mainTxState,
         intentTxState: intentTxState || {},
         setApprovalTxState,
+        setAllowanceState,
         setMainTxState,
         setIntentTxState,
         gasLimit,

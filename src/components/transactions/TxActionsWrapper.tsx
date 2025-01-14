@@ -20,9 +20,11 @@ interface TxActionsWrapperProps extends BoxProps {
   handleApproval?: () => Promise<void>;
   handleAction: () => Promise<void>;
   handleConfirm?: () => void;
+  handleAllowance?: () => void;
   isWrongNetwork: boolean;
   mainTxState: TxStateType;
   intentTxState?: TxStateType;
+  allowanceTxState?: TxStateType;
   preparingTransactions: boolean;
   requiresAmount?: boolean;
   requiresApproval: boolean;
@@ -48,9 +50,11 @@ export const TxActionsWrapper = ({
   intentActionInProgressText,
   handleAction,
   handleConfirm,
+  handleAllowance,
   isWrongNetwork,
   mainTxState,
   intentTxState,
+  allowanceTxState,
   preparingTransactions,
   intentActionText,
   requiresAmount,
@@ -90,7 +94,10 @@ export const TxActionsWrapper = ({
       return { loading: true, disabled: true, content: actionInProgressText };
     if (requiresApproval && !approvalTxState?.success)
       return { disabled: true, content: actionText };
-
+    if(allowanceTxState?.success && !allowanceTxState?.loading)
+      return { loading: false,disabled: false, content: "Verify Allowance", handleClick: handleAllowance };
+    if(allowanceTxState?.loading)
+      return {loading: true, disabled: true, content: "Verifying Allowance"};
     if (intentTxState?.loading)
       return { loading: true, disabled: true, content: intentActionInProgressText };
     if (intentTxState?.success && !mainTxState?.success)

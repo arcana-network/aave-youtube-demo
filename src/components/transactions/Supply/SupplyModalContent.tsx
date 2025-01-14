@@ -56,6 +56,7 @@ import { SupplyWrappedTokenActions } from './SupplyWrappedTokenActions';
 import { useBalance, useCaIntent, useCaState } from 'src/services/ca';
 import { CA } from '@arcana/ca-sdk';
 import { current } from 'immer';
+import Tooltip from '@visx/tooltip/lib/tooltips/Tooltip';
 
 export enum ErrorType {
   CAP_REACHED,
@@ -116,6 +117,8 @@ export const SupplyModalContentWrapper = (
     ),
   };
 
+  console.log('canSupplyAsWrappedToken: ', canSupplyAsWrappedToken);
+
   return canSupplyAsWrappedToken ? (
     <SupplyWrappedTokenModalContent {...props} />
   ) : (
@@ -149,21 +152,26 @@ export const SupplyModalContent = React.memo(
   }: SupplyModalContentProps) => {
     const { marketReferencePriceInUsd } = useAppDataContext();
     const { currentMarketData, currentNetworkConfig } = useProtocolDataContext();
-    const { mainTxState: supplyTxState, gasLimit, txError, intentTxState } = useModalContext();
+    const {
+      mainTxState: supplyTxState,
+      gasLimit,
+      txError,
+      intentTxState,
+      allowanceState,
+    } = useModalContext();
 
     const [steps, setSteps] = useState(useCaState());
     useEffect(() => {
       const interval = setInterval(() => {
         setSteps(useCaState());
-      }
-      , 1000)
+      }, 1000);
       return () => clearInterval(interval);
-    }
-    , [steps])
+    }, [steps]);
     // console.log("Steps states: ",steps.steps.find((s) => s.done==true))
     const minRemainingBaseTokenBalance = useRootStore(
       (state) => state.poolComputed.minRemainingBaseTokenBalance
     );
+    console.log('using supplyModalContent');
 
     // states
     const [amount, setAmount] = useState('');
@@ -246,10 +254,11 @@ export const SupplyModalContent = React.memo(
           symbol={supplyUnWrapped ? currentNetworkConfig.baseAssetSymbol : poolReserve.symbol}
           assets={[
             {
-              balance: (    CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId) ?
-
-                balances?.find((b) => b.symbol === poolReserve.symbol)?.balance : maxAmountToSupply
-              ),
+              balance: CA.getSupportedChains().find(
+                (chain) => chain.id === currentMarketData.chainId
+              )
+                ? balances?.find((b) => b.symbol === poolReserve.symbol)?.balance
+                : maxAmountToSupply,
               symbol: supplyUnWrapped ? currentNetworkConfig.baseAssetSymbol : poolReserve.symbol,
               iconSymbol: supplyUnWrapped
                 ? currentNetworkConfig.baseAssetSymbol
@@ -260,8 +269,13 @@ export const SupplyModalContent = React.memo(
           isMaxSelected={isMaxSelected}
           disabled={supplyTxState.loading}
           maxValue={
-            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)) ?
-            balances?.find((b) => (b.symbol === poolReserve.symbol)|| (poolReserve.symbol === 'WETH' && b.symbol === 'ETH'))?.balance  : maxAmountToSupply
+            CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)
+              ? balances?.find(
+                  (b) =>
+                    b.symbol === poolReserve.symbol ||
+                    (poolReserve.symbol === 'WETH' && b.symbol === 'ETH')
+                )?.balance
+              : maxAmountToSupply
           }
           balanceText={<Trans>Unified token balance</Trans>}
           event={{
@@ -273,80 +287,257 @@ export const SupplyModalContent = React.memo(
           }}
         />
 
-        {
-          (intentTxState.success && !supplyTxState.success) ? (
-            // display useCaIntent().intent data in a div
-            (supplyTxState.loading) ? 
-            (
-              steps.steps[0].done !=true ?
-            (<h3>Loading ...</h3>)
-            : (
-              steps.steps[1].done !=true ?
-              (<h3>✅{steps.steps[0].type}</h3>)
-              : (
-                !steps.steps[2].done !=true ?
-                (<h3>✅{steps.steps[1].type}</h3>)
-                : (
-                  !steps.steps[3].done !=true ?
-                  (<h3>✅{steps.steps[2].type}</h3>)
-                  : (
-                    !steps.steps[4].done !=true ?
-                    (<h3>✅{steps.steps[3].type}</h3>)
-                    : (
-                      !steps.steps[5].done !=true ?
-                      (<h3>✅{steps.steps[4].type}</h3>) : (<h3>✅{steps.steps[5].type}</h3>)
-                    )
-                  )     
-                )
-              )
+        {intentTxState.success && !supplyTxState.success ? (
+          // display useCaIntent().intent data in a div
+          supplyTxState.loading ? (
+            // intent is done, but supply is not done
+            steps.steps[0].done != true ? (
+              <h3>Loading ...</h3>
+            ) : steps.steps[1].done != true ? (
+              <h3>✅{steps.steps[0].type}</h3>
+            ) : !steps.steps[2].done != true ? (
+              <h3>✅{steps.steps[1].type}</h3>
+            ) : !steps.steps[3].done != true ? (
+              <h3>✅{steps.steps[2].type}</h3>
+            ) : !steps.steps[4].done != true ? (
+              <h3>✅{steps.steps[3].type}</h3>
+            ) : !steps.steps[5].done != true ? (
+              <h3>✅{steps.steps[4].type}</h3>
+            ) : (
+              <h3>✅{steps.steps[5].type}</h3>
             )
-            )
-            :
-            (<div>
+          ) : (
+            //intent is displayed
+            <div>
               <h1>Intent details</h1>
-                <h3> Destination Chain: {useCaIntent()?.intent?.destination.chainName}
-                <br></br>
-                Spend: {useCaIntent()?.intent?.sourcesTotal} {useCaIntent()?.intent?.token.symbol}
-                <br></br>
+              <h3>
+                Sources
                 {useCaIntent()?.intent?.sources.map((source, index) => {
                   return (
-                    <h5 key={index}>
-                      {source.chainName}: {source.amount} {useCaIntent()?.intent?.token.symbol}
-                    </h5>
-                  )
-                })
-              }
-              Total Fees: {useCaIntent()?.intent?.fees.total} {useCaIntent()?.intent?.token.symbol}
-              <h5>
-              CA Gas Fees: {useCaIntent()?.intent?.fees.caGas} {useCaIntent()?.intent?.token.symbol}
-              <br></br>
-              Solver Fees: {useCaIntent()?.intent?.fees.solver} {useCaIntent()?.intent?.token.symbol}
-              <br></br>
-              Protocol Fees: {useCaIntent()?.intent?.fees.protocol} {useCaIntent()?.intent?.token.symbol}
-              <br></br>
-              Gas Supplied: {useCaIntent()?.intent?.fees.gasSupplied} {useCaIntent()?.intent?.token.symbol}
-              </h5> </h3>
-              
+                    // align source chain name to the left and amount to the right
+                    <div key={index} style={{ display: 'flex' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '10px',
+                          margin: '0px',
+                          border: '1px solid black',
+                          borderRadius: '5px',
+                          width: '100%',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          backgroundColor: 'hsl(0, 12, 93)',
+                          marginTop: '10px',
+                          marginBottom: '10px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <TokenIcon
+                            symbol={useCaIntent()?.intent?.token.symbol!}
+                            fontSize="large"
+                          />
+                          <Typography
+                            variant="subheader1"
+                            sx={{ ml: 2, opacity: 1, fontSize: '1.2rem' }}
+                            noWrap
+                            data-cy={`assetName`}
+                          >
+                            {useCaIntent()?.intent?.token.symbol}
+                          </Typography>
+                          <Typography
+                            variant="subheader1"
+                            sx={{ ml: 1, opacity: 0.3 }}
+                            noWrap
+                            data-cy={`assetName`}
+                          >
+                            {useCaIntent()?.intent?.sources[index].chainName}
+                          </Typography>
+                        </div>
+                        <div></div>
+                        <div
+                          style={{
+                            fontSize: '0.9rem',
+                            fontWeight: 'normal',
+                          }}
+                        >
+                          {useCaIntent()?.intent?.sources[index].amount}{' '}
+                          {useCaIntent()?.intent?.token.symbol}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                Destination
+                <div key={'destination'} style={{ display: 'flex' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '10px',
+                      margin: '0px',
+                      border: '1px solid black',
+                      borderRadius: '5px',
+                      width: '100%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      backgroundColor: 'hsl(0, 12, 93)',
+                      marginTop: '10px',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <TokenIcon symbol={useCaIntent()?.intent?.token.symbol!} fontSize="large" />
+                      <Typography
+                        variant="subheader1"
+                        sx={{ ml: 2, opacity: 1, fontSize: '1.2rem' }}
+                        noWrap
+                        data-cy={`assetName`}
+                      >
+                        {useCaIntent()?.intent?.token.symbol}
+                      </Typography>
+                      <Typography
+                        variant="subheader1"
+                        sx={{ ml: 1, opacity: 0.3 }}
+                        noWrap
+                        data-cy={`assetName`}
+                      >
+                        {useCaIntent()?.intent?.destination.chainName}
+                      </Typography>
+                    </div>
+                    <div></div>
+                    <div
+                      style={{
+                        fontSize: '0.9rem',
+                        fontWeight: 'normal',
+                      }}
+                    >
+                      {useCaIntent()?.intent?.destination.amount}{' '}
+                      {useCaIntent()?.intent?.token.symbol}
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <div>Total Fees:</div>
+                  <div> </div>
+                  <div>
+                    {' '}
+                    ~{useCaIntent()?.intent?.fees.total} {useCaIntent()?.intent?.token.symbol}
+                  </div>
+                </div>
+                <div key={'fees'} style={{ display: 'flex' }}>
+                  <div
+                    style={{
+                      padding: '10px',
+                      margin: '0px',
+                      border: '1px solid black',
+                      borderRadius: '5px',
+                      width: '100%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      backgroundColor: 'hsl(0, 12, 93)',
+                      marginTop: '10px',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div>CA Gas Fees:</div>
+                      <div> </div>
+                      <div>
+                        {useCaIntent().intent?.fees.caGas}{' '}
+                        {useCaIntent()?.intent?.token.symbol}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div>Solver Fees:</div>
+                      <div> </div>
+                      <div>
+                        {useCaIntent().intent?.fees.solver}{' '}
+                        {useCaIntent()?.intent?.token.symbol}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div>Protocol Fees:</div>
+                      <div> </div>
+                      <div>
+                        {useCaIntent().intent?.fees.protocol}{' '}
+                        {useCaIntent()?.intent?.token.symbol}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div>Gas Supplied:</div>
+                      <div> </div>
+                      <div>
+                        {useCaIntent()?.intent?.fees?.gasSupplied}{' '}
+                        {useCaIntent()?.intent?.token.symbol}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>Total at Destination:</div>
+                  <div> </div>
+                  <div>{useCaIntent()?.intent?.sourcesTotal}{' '}{useCaIntent()?.intent?.token.symbol}</div>
+                </div>
+              </h3>
             </div>
-            )
           )
-          :
-          (
-            <TxModalDetails gasLimit={gasLimit} skipLoad={true} disabled={Number(amount) === 0}>
-          <DetailsNumberLine description={<Trans>Supply APY</Trans>} value={supplyApy} percent />
-          <DetailsIncentivesLine
-            incentives={poolReserve.aIncentivesData}
-            symbol={poolReserve.symbol}
-          />
-          <DetailsCollateralLine collateralType={collateralType} />
-          <DetailsHFLine
-            visibleHfChange={!!amount}
-            healthFactor={user ? user.healthFactor : '-1'}
-            futureHealthFactor={healfthFactorAfterSupply.toString()}
-          />
-        </TxModalDetails>
-          )
-        }
+        ) : allowanceState?.success == false ? (
+          <>
+            <h1>Verify Allowance</h1>
+            <h2>Token</h2>
+            <h2>Chain</h2>
+            <h2>Current Allowance</h2>
+            <h2>Min Allowance</h2>
+            <h2>Max Allowance</h2>
+          </>
+        ) : (
+          // nothing is done
+          <TxModalDetails gasLimit={gasLimit} skipLoad={true} disabled={Number(amount) === 0}>
+            <DetailsNumberLine description={<Trans>Supply APY</Trans>} value={supplyApy} percent />
+            <DetailsIncentivesLine
+              incentives={poolReserve.aIncentivesData}
+              symbol={poolReserve.symbol}
+            />
+            <DetailsCollateralLine collateralType={collateralType} />
+            <DetailsHFLine
+              visibleHfChange={!!amount}
+              healthFactor={user ? user.healthFactor : '-1'}
+              futureHealthFactor={healfthFactorAfterSupply.toString()}
+            />
+          </TxModalDetails>
+        )}
 
         {txError && <GasEstimationError txError={txError} />}
 
@@ -378,6 +569,8 @@ export const SupplyWrappedTokenModalContent = ({
   if (!wrappedTokenConfig) {
     throw new Error('Wrapped token config is not defined');
   }
+
+  console.log('wrappedTokenConfig: ', wrappedTokenConfig);
 
   const tokenInBalance = walletBalances[wrappedTokenConfig.tokenIn.underlyingAsset].amount;
   const tokenOutBalance = walletBalances[wrappedTokenConfig.tokenOut.underlyingAsset].amount;
