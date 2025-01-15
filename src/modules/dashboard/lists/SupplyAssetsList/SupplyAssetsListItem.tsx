@@ -164,7 +164,6 @@ export const SupplyAssetsListItemDesktop = ({
         ProtocolAction.supply
       )}
     >
-      abcd
       {canSupplyAsWrappedToken && wrappedToken && walletBalance === '0' ? (
         <ListColumn>
           <ContentWithTooltip
