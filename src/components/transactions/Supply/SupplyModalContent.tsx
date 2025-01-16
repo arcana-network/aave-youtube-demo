@@ -117,7 +117,7 @@ export const SupplyModalContentWrapper = (
     ),
   };
 
-  console.log('canSupplyAsWrappedToken: ', canSupplyAsWrappedToken);
+
 
   return canSupplyAsWrappedToken ? (
     <SupplyWrappedTokenModalContent {...props} />
@@ -161,24 +161,19 @@ export const SupplyModalContent = React.memo(
     } = useModalContext();
 
     const [steps, setSteps] = useState(useCaState());
-    useEffect(() => {
-      const interval = setInterval(() => {
-        setSteps(useCaState());
-      }, 500);
-      return () => clearInterval(interval);
-    }, [steps]);
+
     // console.log("Steps states: ",steps.steps.find((s) => s.done==true))
     const minRemainingBaseTokenBalance = useRootStore(
       (state) => state.poolComputed.minRemainingBaseTokenBalance
     );
-    console.log('using supplyModalContent');
+
 
     // states
     const [amount, setAmount] = useState('');
     const supplyUnWrapped = underlyingAsset.toLowerCase() === API_ETH_MOCK_ADDRESS.toLowerCase();
 
     const walletBalance = supplyUnWrapped ? nativeBalance : tokenBalance;
-    const balances = useBalance(true);
+    const balances = useBalance();
     const supplyApy = poolReserve.supplyAPY;
     const { supplyCap, totalLiquidity, isFrozen, decimals, debtCeiling, isolationModeTotalDebt } =
       poolReserve;
@@ -208,6 +203,7 @@ export const SupplyModalContent = React.memo(
       .multipliedBy(marketReferencePriceInUsd)
       .shiftedBy(-USD_DECIMALS);
 
+    
     const isMaxSelected = amount === maxAmountToSupply;
 
     const healfthFactorAfterSupply = calculateHFAfterSupply(user, poolReserve, amountInEth);
@@ -231,6 +227,8 @@ export const SupplyModalContent = React.memo(
           addToken={addTokenProps}
         />
       );
+
+    
 
     return (
       <>
@@ -267,7 +265,7 @@ export const SupplyModalContent = React.memo(
           ]}
           capType={CapType.supplyCap}
           isMaxSelected={isMaxSelected}
-          disabled={supplyTxState.loading}
+          disabled={supplyTxState.loading || intentTxState.success || intentTxState.loading}
           maxValue={
             CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)
               ? balances?.find(
@@ -305,23 +303,17 @@ export const SupplyModalContent = React.memo(
               <h3>✅{steps.steps[4].type}</h3>
             ) : (
               <h3>✅{steps.steps[5].type}</h3>
-            )
+                )
           ) : (
             //intent is displayed
             <div>
               <h1>Intent details</h1>
               <h3>
-                Sources
-                {useCaIntent()?.intent?.sources.map((source, index) => {
-                  return (
-                    // align source chain name to the left and amount to the right
-                    <div key={index} style={{ display: 'flex' }}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '10px',
+                You Have:
+                <div key={"sources"} style={{ 
+                      display: 'flex',
+                      flexDirection: 'column',
+                      padding: '10px',
                           margin: '0px',
                           border: '1px solid black',
                           borderRadius: '5px',
@@ -331,6 +323,18 @@ export const SupplyModalContent = React.memo(
                           backgroundColor: 'hsl(0, 12, 93)',
                           marginTop: '10px',
                           marginBottom: '10px',
+                     }}>
+                {useCaIntent()?.intent?.sources.map((source, index) => {
+                  
+                  return (
+                    // align source chain name to the left and amount to the right
+                      <div key={index}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '5px',
+                          margin: '0px',
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -366,11 +370,52 @@ export const SupplyModalContent = React.memo(
                           {useCaIntent()?.intent?.token.symbol}
                         </div>
                       </div>
-                    </div>
                   );
                 })}
-                Destination
-                <div key={'destination'} style={{ display: 'flex' }}>
+                <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '5px',
+                      margin: '0px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <TokenIcon symbol={useCaIntent()?.intent?.token.symbol!} fontSize="large" />
+                      <Typography
+                        variant="subheader1"
+                        sx={{ ml: 2, opacity: 1, fontSize: '1.2rem' }}
+                        noWrap
+                        data-cy={`assetName`}
+                      >
+                        {useCaIntent()?.intent?.token.symbol}
+                      </Typography>
+                      <Typography
+                        variant="subheader1"
+                        sx={{ ml: 1, opacity: 0.3 }}
+                        noWrap
+                        data-cy={`assetName`}
+                      >
+                        {useCaIntent()?.intent?.destination.chainName}
+                      </Typography>
+                    </div>
+                    <div></div>
+                    <div
+                      style={{
+                        fontSize: '0.9rem',
+                        fontWeight: 'normal',
+                      }}
+                    >
+                      {Number(balances?.find(
+                        (b) => b.symbol === poolReserve.symbol)?.breakdown.find((b)=>b.chain.id==useCaIntent()?.intent?.destination.chainID!)?.balance)
+                      }{' '}
+                      {useCaIntent()?.intent?.token.symbol}
+                    </div>
+                  </div>
+                                    </div>
+                You Need
+                <div style={{ display: 'flex' }}>
                   <div
                     style={{
                       display: 'flex',
@@ -414,7 +459,11 @@ export const SupplyModalContent = React.memo(
                         fontWeight: 'normal',
                       }}
                     >
-                      {useCaIntent()?.intent?.destination.amount}{' '}
+                      {Number(Number(useCaIntent()?.intent?.sourcesTotal)+Number(
+                        balances?.find(
+                          (b) => b.symbol === poolReserve.symbol)?.breakdown.find((b)=>b.chain.id==useCaIntent()?.intent?.destination.chainID!)?.balance
+                        )-Number(useCaIntent().intent?.fees.total)).toPrecision(10)
+                        }{' '}
                       {useCaIntent()?.intent?.token.symbol}
                     </div>
                   </div>
@@ -506,9 +555,14 @@ export const SupplyModalContent = React.memo(
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>Total at Destination:</div>
+                  <div>Total Supply:</div>
                   <div> </div>
-                  <div>{useCaIntent()?.intent?.sourcesTotal}{' '}{useCaIntent()?.intent?.token.symbol}</div>
+                  <div>{
+                    Number(Number(useCaIntent()?.intent?.sourcesTotal)+Number(
+                      balances?.find(
+                        (b) => b.symbol === poolReserve.symbol)?.breakdown.find((b)=>b.chain.id==useCaIntent()?.intent?.destination.chainID!)?.balance
+                      )+Number(useCaIntent()?.intent?.fees.total)).toPrecision(10)
+                    }{' '}{useCaIntent()?.intent?.token.symbol}</div>
                 </div>
               </h3>
             </div>
@@ -570,7 +624,6 @@ export const SupplyWrappedTokenModalContent = ({
     throw new Error('Wrapped token config is not defined');
   }
 
-  console.log('wrappedTokenConfig: ', wrappedTokenConfig);
 
   const tokenInBalance = walletBalances[wrappedTokenConfig.tokenIn.underlyingAsset].amount;
   const tokenOutBalance = walletBalances[wrappedTokenConfig.tokenOut.underlyingAsset].amount;
