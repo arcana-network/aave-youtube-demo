@@ -235,7 +235,6 @@ export const SupplyActions = React.memo(
     useEffect(() => {
       const interval = setInterval(async () => {
         if(useCaIntent().open){
-          console.log("CA Intent open")
           setIntentTxState({ loading: false, success: true });
         }
         if(useAllowance().open){
@@ -250,7 +249,7 @@ export const SupplyActions = React.memo(
 
     const intentAction = async () => {
       try {
-        const caBalances = useBalance(true);
+        const caBalances = useBalance();
           setIntentTxState({ ...intentTxState, loading: true, success: false });
           if(            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId))
           &&
