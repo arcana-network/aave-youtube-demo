@@ -1,4 +1,4 @@
-import { API_ETH_MOCK_ADDRESS } from '@aave/contract-helpers';
+import { API_ETH_MOCK_ADDRESS, ChainId } from '@aave/contract-helpers';
 import { USD_DECIMALS, valueToBigNumber } from '@aave/math-utils';
 import { Trans } from '@lingui/macro';
 import { Skeleton, Stack, Typography } from '@mui/material';
@@ -53,7 +53,7 @@ import { IsolationModeWarning } from '../Warnings/IsolationModeWarning';
 import { SNXWarning } from '../Warnings/SNXWarning';
 import { SupplyActions } from './SupplyActions';
 import { SupplyWrappedTokenActions } from './SupplyWrappedTokenActions';
-import { useBalance, useCaIntent, useCaState } from 'src/services/ca';
+import { useAllowance, useBalance, useCaIntent, useCaState } from 'src/services/ca';
 import { CA } from '@arcana/ca-sdk';
 import { current } from 'immer';
 import Tooltip from '@visx/tooltip/lib/tooltips/Tooltip';
@@ -177,6 +177,9 @@ export const SupplyModalContent = React.memo(
     const supplyApy = poolReserve.supplyAPY;
     const { supplyCap, totalLiquidity, isFrozen, decimals, debtCeiling, isolationModeTotalDebt } =
       poolReserve;
+
+    const allowance = useAllowance().values;
+    const valal = useAllowance();
 
     // Calculate max amount to supply
     const maxAmountToSupply = getMaxAmountAvailableToSupply(
@@ -567,15 +570,197 @@ export const SupplyModalContent = React.memo(
               </h3>
             </div>
           )
-        ) : allowanceState?.success == false ? (
-          <>
-            <h1>Verify Allowance</h1>
-            <h2>Token</h2>
-            <h2>Chain</h2>
-            <h2>Current Allowance</h2>
-            <h2>Min Allowance</h2>
-            <h2>Max Allowance</h2>
-          </>
+        ) : 
+        (allowanceState.success ) 
+        // true == true
+         ? (
+          <div>
+            <table style={{
+              display: 'flex',
+              flexDirection: 'column',
+              margin: '0px',
+                border: '1px solid black',
+                borderRadius: '5px',
+                width: '100%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                backgroundColor: 'hsl(0, 12, 93)',
+                marginBottom: '10px',
+             }}>
+          <thead>
+            <tr
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+                padding: '5px',
+                width: '100%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                backgroundColor: 'hsl(0, 12, 93)',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}
+            >
+              <th
+              style={{
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+                padding: '5px',
+                width: '15%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                backgroundColor: 'hsl(0, 12, 93)',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}>Token</th>
+              <th
+              style={{
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+                width: '15%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                backgroundColor: 'hsl(0, 12, 93)',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}>Chain</th>
+              <th
+              style={{
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+                padding: '5px',
+                width: '25%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                backgroundColor: 'hsl(0, 12, 93)',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}>Current Allowance</th>
+              <th
+              style={{
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+                padding: '5px',
+                width: '25%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                backgroundColor: 'hsl(0, 12, 93)',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}>Min Allowance</th>
+              <th
+              style={{
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+                padding: '5px',
+                width: '25%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                backgroundColor: 'hsl(0, 12, 93)',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}>Set Allowance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr 
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-evenly',
+              }}
+            >
+              {
+                valal.data.map((elem, index) => {
+                  return (
+                    <tr>
+                      <td
+                        style={{
+                          justifyContent: 'space-evenly',
+                          alignItems: 'center',
+                          padding: '5px',
+                          width: '5%',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          backgroundColor: 'hsl(0, 12, 93)',
+                          marginTop: '10px',
+                          marginBottom: '10px',
+                        }}
+                      >{ elem.token.symbol }</td>
+              <td
+              style={{
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+                padding: '5px',
+                width: '15%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                backgroundColor: 'hsl(0, 12, 93)',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}
+              >{
+                 `${elem.chainName}` }</td>
+              <td
+              style={{
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+                padding: '5px',
+                width: '25%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                backgroundColor: 'hsl(0, 12, 93)',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}>{
+                 elem.currentAllowance.toString().startsWith("11579208923731619542") ? "MAX" :
+                elem.currentAllowance 
+                }</td>
+              <td
+              style={{
+
+                justifyContent: 'space-between',
+                alignItems: 'left',
+                padding: '5px',
+                width: '25%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                backgroundColor: 'hsl(0, 12, 93)',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}>
+                {elem.minAllowance }
+              </td>
+              <td style={{
+                // flexDirection: 'row',
+                justifyContent: 'space-evenly',
+                alignItems: 'right',
+                width: '25%',
+                direction: 'rtl',
+                paddingRight: '10px',
+                }}>
+                <input 
+                type="string" value="MAX" disabled
+                style={{
+                  // flexDirection: 'row',
+                  justifyContent: 'space-evenly',
+                  alignItems: 'center',
+                  width: '100%',
+                  direction: 'ltr'
+                }}
+                />
+              </td>
+                    </tr>
+                  )
+                }
+                )
+              }
+            </tr>
+          </tbody>
+        </table>
+          </div>
         ) : (
           // nothing is done
           <TxModalDetails gasLimit={gasLimit} skipLoad={true} disabled={Number(amount) === 0}>

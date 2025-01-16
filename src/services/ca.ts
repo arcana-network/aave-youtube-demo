@@ -12,17 +12,31 @@ let caSDK: CA | null = null
 let isInitialized = false
 let balance: { symbol: string; balance: string; balanceInFiat: number; decimals: number; icon: string | undefined; breakdown: { chain: { id: number; name: string; logo: string }; network: "evm"; contractAddress: `0x${string}`; isNative: boolean | undefined; balance: string; balanceInFiat: number }[]; local: boolean | undefined; abstracted: boolean | undefined }[] | null = null
 let allowance : {
-    data: AllowanceHookInput,
+    data: Array<{
+      minAllowance: string;
+      currentAllowance: string;
+      chainID: number;
+      chainName: string;
+      token: {
+          contractAddress: `0x${string}`;
+          decimals: number;
+          symbol: string;
+          name: string;
+      };
+  }>,
     allow: ((s: Array<"min" | "max" | bigint | string>) => void) | null,
-    deny: (() => void) | null,
+    deny: (() => void),
     open: boolean
-    allowances: Array<"min" | "max" | bigint | string>
+    allowances: Array<"min" | "max" | bigint | string>,
+    values: Array<{ chainID: number; allowance: bigint; token: string }>
 } = {
     data: [],
     allow: null,
-    deny: null,
+    deny: () => { },
     open: false,
-    allowances: []
+    allowances: [],
+    values: [ 
+    ]
   };
 
 let caIntent : {
@@ -104,6 +118,8 @@ const useCaSdkAuth = async () => {
                 caSDK.addCAEventListener(eventListener)
                 await caSDK.init()
                 balance = await caSDK.getUnifiedBalances()
+                allowance.values = await caSDK.allowance().get()
+                console.log("allowance values", allowance.values)
                 isInitialized = true
                 console.log('CA SDK initialized')
                 console.log("event listener", caSDK.caEvents.eventNames)
@@ -175,6 +191,13 @@ const clearCaIntent = () => {
     caIntent.intentRefreshing = false;
 }
 
+const clearCaAllowance = () => {
+    allowance.allow = null;
+    allowance.deny = () => { };
+    allowance.open = false;
+    allowance.values = []
+}
+
 const useCaState = () => {
     return state
 }
@@ -182,4 +205,4 @@ const useCaState = () => {
 
 
 
-export { useCaSdkAuth, useBalance, useBridge, checkCA, useAllowance, useCaIntent, clearCaIntent, useCaState }
+export { useCaSdkAuth, useBalance, useBridge, checkCA, useAllowance, useCaIntent, clearCaIntent, useCaState, clearCaAllowance }

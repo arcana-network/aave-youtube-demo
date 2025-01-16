@@ -9,6 +9,9 @@ import { TxAction } from 'src/ui-config/errorMapping';
 
 import { ApprovalTooltip } from '../infoTooltips/ApprovalTooltip';
 import { RightHelperText } from './FlowCommons/RightHelperText';
+import { useAllowance } from 'src/services/ca';
+import { useRootStore } from 'src/store/root';
+import { ChainId } from '@aave/contract-helpers';
 
 interface TxActionsWrapperProps extends BoxProps {
   actionInProgressText: ReactNode;
@@ -28,6 +31,7 @@ interface TxActionsWrapperProps extends BoxProps {
   preparingTransactions: boolean;
   requiresAmount?: boolean;
   requiresApproval: boolean;
+  requiresAllowance?: boolean;
   symbol?: string;
   blocked?: boolean;
   fetchingData?: boolean;
@@ -59,6 +63,7 @@ export const TxActionsWrapper = ({
   intentActionText,
   requiresAmount,
   requiresApproval,
+  requiresAllowance,
   sx,
   symbol,
   blocked,
@@ -73,6 +78,9 @@ export const TxActionsWrapper = ({
   const hasApprovalError =
     requiresApproval && txError?.txAction === TxAction.APPROVAL && txError?.actionBlocked;
   const isAmountMissing = requiresAmount && requiresAmount && Number(amount) === 0;
+  const allowance = useAllowance();
+  const currentMarketData = useRootStore((store) => store.currentMarketData);
+
 
   function getMainParams() {
     if (blocked) return { disabled: true, content: actionText };
@@ -94,25 +102,23 @@ export const TxActionsWrapper = ({
       return { loading: true, disabled: true, content: actionInProgressText };
     if (requiresApproval && !approvalTxState?.success)
       return { disabled: true, content: actionText };
-    if(allowanceTxState?.success && !allowanceTxState?.loading)
-      return { loading: false,disabled: false, content: "Verify Allowance", handleClick: handleAllowance };
-    if(allowanceTxState?.loading)
-      return {loading: true, disabled: true, content: "Verifying Allowance"};
     if (intentTxState?.loading)
       return { loading: true, disabled: true, content: intentActionInProgressText };
+    if(allowanceTxState?.success){
+      return { loading: false,disabled: false, content: "Verify Allowance", handleClick: handleAllowance };
+    }
+    if(allowanceTxState?.loading && !allowanceTxState?.success)
+      return {loading: true, disabled: true, content: "Verifying Allowance"};
     if (intentTxState?.success && !mainTxState?.success)
       return {loading: false, disabled:false, content: intentActionText, handleClick: handleConfirm};
-
     return { content: actionText, handleClick: handleAction };
   }
-
   function getApprovalParams() {
     if (
-      !requiresApproval ||
       isWrongNetwork ||
       isAmountMissing ||
       preparingTransactions ||
-      hasApprovalError
+      hasApprovalError || !requiresApproval
     )
       return null;
     if (approvalTxState?.loading)

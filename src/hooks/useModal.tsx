@@ -6,7 +6,7 @@ import { TxErrorType } from 'src/ui-config/errorMapping';
 import { GENERAL } from 'src/utils/mixPanelEvents';
 
 import { Proposal } from './governance/useProposals';
-import { clearCaIntent, useCaIntent } from 'src/services/ca';
+import { clearCaAllowance, clearCaIntent, useAllowance, useCaIntent } from 'src/services/ca';
 
 export enum ModalType {
   Supply,
@@ -135,6 +135,7 @@ export const ModalContext = createContext<ModalContextType<ModalArgsType>>(
 );
 
 export const ModalContextProvider: React.FC = ({ children }) => {
+  const allowance = useAllowance();
   const { setSwitchNetworkError } = useWeb3Context();
   // contains the current modal open state if any
   const [type, setType] = useState<ModalType>();
@@ -339,11 +340,19 @@ export const ModalContextProvider: React.FC = ({ children }) => {
             loading: false,
           });
           setApprovalTxState({});
-          setAllowanceState({});
+          setAllowanceState({
+            success: false,
+            loading: false,
+          });
           clearCaIntent();
+          clearCaAllowance();
           if(useCaIntent().deny){
             console.log("intent closed")
             useCaIntent()?.deny();
+          }
+          if(useAllowance() && useAllowance().deny){
+            console.log("allowance closed")
+            useAllowance().deny();
           }
           setGasLimit('');
           setTxError(undefined);

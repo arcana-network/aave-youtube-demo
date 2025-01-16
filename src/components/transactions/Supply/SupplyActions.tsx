@@ -16,7 +16,7 @@ import { queryKeysFactory } from 'src/ui-config/queries';
 
 import { TxActionsWrapper } from '../TxActionsWrapper';
 import { APPROVAL_GAS_LIMIT, checkRequiresApproval } from '../utils';
-import { clearCaIntent, useAllowance, useBalance, useBridge, useCaIntent, useCaSdkAuth } from 'src/services/ca';
+import { clearCaAllowance, clearCaIntent, useAllowance, useBalance, useBridge, useCaIntent, useCaSdkAuth } from 'src/services/ca';
 import { roundToTokenDecimals } from 'src/utils/utils';
 import Decimal from 'decimal.js';
 import { useWalletBalances } from 'src/hooks/app-data-provider/useWalletBalances';
@@ -129,11 +129,11 @@ export const SupplyActions = React.memo(
         await approval();
       } catch (error) {
         const parsedError = getErrorTextFromError(error, TxAction.APPROVAL, false);
-        setTxError(parsedError);
+        setTxError(parsedError); 
         setApprovalTxState({ ...approvalTxState, loading: false });
       }
     }
-
+    const allowance = useAllowance();
 
     const ifAllowance = async () => {
       try {
@@ -142,6 +142,8 @@ export const SupplyActions = React.memo(
           const allowance = useAllowance();
           if (allowance && allowance.allow) {
             allowance.allow(values);
+            setAllowanceState({ ...allowanceState, loading: true, success: false });
+            // clearCaAllowance();
           }
       } catch (error) {
         const parsedError = getErrorTextFromError(error, TxAction.APPROVAL, false);
@@ -149,6 +151,7 @@ export const SupplyActions = React.memo(
         setApprovalTxState({ ...approvalTxState, loading: false });
       }
     }
+
     useEffect(() => {
       if (!isFetchedAfterMount) {
         fetchApprovedAmount();
@@ -235,11 +238,14 @@ export const SupplyActions = React.memo(
     useEffect(() => {
       const interval = setInterval(async () => {
         if(useCaIntent().open){
+          console.log("Intent Open")
+          setAllowanceState({ loading: false });
           setIntentTxState({ loading: false, success: true });
         }
         if(useAllowance().open){
-          console.log("CA Allowance open")
-          setApprovalTxState({ ...approvalTxState, loading: false, success: true });
+          setAllowanceState({ loading: false, success: true });
+          setIntentTxState({ loading: false });
+          console.log("Allowance open: ", allowanceState);
         }
       }
       , 1000);
@@ -251,6 +257,7 @@ export const SupplyActions = React.memo(
       try {
         const caBalances = useBalance();
           setIntentTxState({ ...intentTxState, loading: true, success: false });
+          setAllowanceState({ ...allowanceState, loading: true, success: false });
           if(            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId))
           &&
           Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
@@ -289,6 +296,7 @@ export const SupplyActions = React.memo(
         approvalTxState={approvalTxState}
         intentTxState={intentTxState}
         isWrongNetwork={isWrongNetwork}
+        allowanceTxState={allowanceState}
         requiresAmount
         amount={amountToSupply}
         symbol={symbol}
