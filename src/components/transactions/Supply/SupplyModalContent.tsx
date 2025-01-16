@@ -555,7 +555,7 @@ export const SupplyModalContent = React.memo(
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>Total Supply:</div>
+                  <div>Total Spend:</div>
                   <div> </div>
                   <div>{
                     Number(Number(useCaIntent()?.intent?.sourcesTotal)+Number(
