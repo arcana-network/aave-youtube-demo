@@ -675,7 +675,7 @@ export const SupplyModalContent = React.memo(
               {
                 valal.data.map((elem, index) => {
                   return (
-                    <tr>
+                    <tr key={index}>
                       <td
                         style={{
                           justifyContent: 'space-evenly',
