@@ -1,6 +1,7 @@
 import { CA, Intent, ProgressStep } from '@arcana/ca-sdk'
 import { AllowanceHookInput, EthereumProvider } from '@arcana/ca-sdk/dist/types/typings'
 import { NullValueNode } from 'graphql'
+import { useCallback } from 'react'
 import { useModalContext } from 'src/hooks/useModal'
 
 
@@ -60,7 +61,7 @@ let caIntent : {
     }
 
 
-  const eventListener = async (data: any) => {
+  export const eventListener = async (data: any) => {
     switch (data.type) {
       case "EXPECTED_STEPS": {
         console.log("Expected steps", data.data)
