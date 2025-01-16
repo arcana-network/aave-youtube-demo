@@ -6,6 +6,7 @@ import { TxErrorType } from 'src/ui-config/errorMapping';
 import { GENERAL } from 'src/utils/mixPanelEvents';
 
 import { Proposal } from './governance/useProposals';
+import { clearCaIntent, useCaIntent } from 'src/services/ca';
 
 export enum ModalType {
   Supply,
@@ -333,9 +334,17 @@ export const ModalContextProvider: React.FC = ({ children }) => {
           setType(undefined);
           setArgs({});
           setMainTxState({});
-          setIntentTxState({});
+          setIntentTxState({
+            success: false,
+            loading: false,
+          });
           setApprovalTxState({});
           setAllowanceState({});
+          clearCaIntent();
+          if(useCaIntent().deny){
+            console.log("intent closed")
+            useCaIntent()?.deny();
+          }
           setGasLimit('');
           setTxError(undefined);
           setSwitchNetworkError(undefined);
