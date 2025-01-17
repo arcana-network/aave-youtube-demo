@@ -292,21 +292,14 @@ export const SupplyModalContent = React.memo(
           // display useCaIntent().intent data in a div
           supplyTxState.loading ? (
             // intent is done, but supply is not done
-            steps.steps[0].done != true ? (
-              <h3>Loading ...</h3>
-            ) : steps.steps[1].done != true ? (
-              <h3>✅{steps.steps[0].type}</h3>
-            ) : !steps.steps[2].done != true ? (
-              <h3>✅{steps.steps[1].type}</h3>
-            ) : !steps.steps[3].done != true ? (
-              <h3>✅{steps.steps[2].type}</h3>
-            ) : !steps.steps[4].done != true ? (
-              <h3>✅{steps.steps[3].type}</h3>
-            ) : !steps.steps[5].done != true ? (
-              <h3>✅{steps.steps[4].type}</h3>
-            ) : (
-              <h3>✅{steps.steps[5].type}</h3>
-                )
+            steps.steps.map((step, index) => {
+              return (
+                <div key={index}>
+                  <h1>{step.done ? "✅":"⭕"}{' '}{step.type}</h1>
+                </div>
+              );
+            }
+            )
           ) : (
             //intent is displayed
             <div>
