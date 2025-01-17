@@ -87,7 +87,6 @@ export const TxActionsWrapper = ({
   const hasApprovalError =
     requiresApproval && txError?.txAction === TxAction.APPROVAL && txError?.actionBlocked;
   const isAmountMissing = requiresAmount && requiresAmount && Number(amount) === 0;
-  const allowance = useAllowance();
       const [currentChainId] = useRootStore((store) => [store.currentChainId, store.account]);
       const selectedChainId = currentChainId;
       // TODO: find a better way to query base token price instead of using a random market.
@@ -97,8 +96,6 @@ export const TxActionsWrapper = ({
       invariant(marketOnNetwork, 'No market for this network');
       const { walletBalances } = useWalletBalances(marketOnNetwork);
       const nativeBalanceUSD = walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amountUSD;    
-  let noAllow = false;
-  let first = true;
   let go = true;
   {
     //check if allowance is there
