@@ -6,12 +6,21 @@ import { TxStateType, useModalContext } from 'src/hooks/useModal';
 import { useWeb3Context } from 'src/libs/hooks/useWeb3Context';
 import { TrackEventProps } from 'src/store/analyticsSlice';
 import { TxAction } from 'src/ui-config/errorMapping';
-
 import { ApprovalTooltip } from '../infoTooltips/ApprovalTooltip';
 import { RightHelperText } from './FlowCommons/RightHelperText';
 import { useAllowance } from 'src/services/ca';
 import { useRootStore } from 'src/store/root';
-import { ChainId } from '@aave/contract-helpers';
+import { API_ETH_MOCK_ADDRESS, ChainId } from '@aave/contract-helpers';
+import { normalize } from '@aave/math-utils';
+import { useWalletBalances } from 'src/hooks/app-data-provider/useWalletBalances';
+import { usePoolReservesHumanized } from 'src/hooks/pool/usePoolReserves';
+import { useGasStation } from 'src/hooks/useGasStation';
+import { useGasPrice } from 'src/hooks/useGetGasPrices';
+import { useIsContractAddress } from 'src/hooks/useIsContractAddress';
+import { marketsData } from 'src/ui-config/marketsConfig';
+import { getNetworkConfig } from 'src/utils/marketsAndNetworksConfig';
+import invariant from 'tiny-invariant';
+import { getGasCosts } from './GasStation/GasStation';
 
 interface TxActionsWrapperProps extends BoxProps {
   actionInProgressText: ReactNode;
@@ -79,7 +88,27 @@ export const TxActionsWrapper = ({
     requiresApproval && txError?.txAction === TxAction.APPROVAL && txError?.actionBlocked;
   const isAmountMissing = requiresAmount && requiresAmount && Number(amount) === 0;
   const allowance = useAllowance();
-  const currentMarketData = useRootStore((store) => store.currentMarketData);
+      const [currentChainId] = useRootStore((store) => [store.currentChainId, store.account]);
+      const selectedChainId = currentChainId;
+      // TODO: find a better way to query base token price instead of using a random market.
+      const marketOnNetwork = Object.values(marketsData).find(
+        (elem) => elem.chainId === selectedChainId
+      );
+      invariant(marketOnNetwork, 'No market for this network');
+      const { walletBalances } = useWalletBalances(marketOnNetwork);
+      const nativeBalanceUSD = walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amountUSD;    
+  let noAllow = false;
+  let first = true;
+  let go = true;
+  {
+    //check if allowance is there
+  }
+  if(requiresApproval && Number(nativeBalanceUSD)>0){
+    go = true;
+  }
+  else{
+    go = false;
+  }
 
 
   function getMainParams() {
@@ -100,7 +129,7 @@ export const TxActionsWrapper = ({
     //   return { content: <Trans>Retry with approval</Trans>, handleClick: handleRetry };
     if (mainTxState?.loading)
       return { loading: true, disabled: true, content: actionInProgressText };
-    if (requiresApproval && !approvalTxState?.success)
+    if (go && !approvalTxState?.success)
       return { disabled: true, content: actionText };
     if (intentTxState?.loading)
       return { loading: true, disabled: true, content: intentActionInProgressText };
@@ -118,7 +147,7 @@ export const TxActionsWrapper = ({
       isWrongNetwork ||
       isAmountMissing ||
       preparingTransactions ||
-      hasApprovalError || !requiresApproval
+      hasApprovalError || !go
     )
       return null;
     if (approvalTxState?.loading)

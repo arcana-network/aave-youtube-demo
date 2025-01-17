@@ -564,7 +564,9 @@ export const SupplyModalContent = React.memo(
                     Number(Number(useCaIntent()?.intent?.sourcesTotal)+Number(
                       balances?.find(
                         (b) => b.symbol === poolReserve.symbol)?.breakdown.find((b)=>b.chain.id==useCaIntent()?.intent?.destination.chainID!)?.balance
-                      )+Number(useCaIntent()?.intent?.fees.total)).toPrecision(10)
+                      )
+                      // +Number(useCaIntent()?.intent?.fees.total)
+                    ).toPrecision(10)
                     }{' '}{useCaIntent()?.intent?.token.symbol}</div>
                 </div>
               </h3>
