@@ -133,9 +133,12 @@ export const TxActionsWrapper = ({
     if(allowanceTxState?.success){
       return { loading: false,disabled: false, content: "Verify Allowance", handleClick: handleAllowance };
     }
-    if(allowanceTxState?.loading && !allowanceTxState?.success)
+    if(allowanceTxState?.loading && !allowanceTxState?.success && !intentTxState?.success){
+      console.log("success");
       return {loading: true, disabled: true, content: "Verifying Allowance"};
-    if (intentTxState?.success && !mainTxState?.success)
+    }
+      
+    if (intentTxState?.success && !mainTxState?.success && (!go || approvalTxState?.success))
       return {loading: false, disabled:false, content: intentActionText, handleClick: handleConfirm};
     return { content: actionText, handleClick: handleAction };
   }

@@ -266,6 +266,10 @@ export const SupplyActions = React.memo(
               console.log("CA completed")
               console.log({ res });
             });
+            if(requiresApproval){
+              console.log("Requires approval")
+              await ifApprove();
+            }
             await action();
           }
           else{
