@@ -62,7 +62,9 @@ export const useApprovalTx = ({
             ...approvedAmount,
             deadline,
             amount:
-              '0',
+            signatureAmount === '-1'
+            ? constants.MaxUint256.toString()
+            : parseUnits(signatureAmount, decimals).toString(),
           });
 
           const response = await signTxData(signatureRequest);
