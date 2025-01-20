@@ -119,10 +119,8 @@ const useCaSdkAuth = async () => {
                 await caSDK.init()
                 balance = await caSDK.getUnifiedBalances()
                 allowance.values = await caSDK.allowance().get()
-                console.log("allowance values", allowance.values)
                 isInitialized = true
                 console.log('CA SDK initialized')
-                console.log("event listener", caSDK.caEvents.eventNames)
                 caSDK.setOnAllowanceHook(async ({allow, deny, sources}) => {
                   console.log("allowance hook: ", {allow, deny, sources})
                     allowance.allow = allow;

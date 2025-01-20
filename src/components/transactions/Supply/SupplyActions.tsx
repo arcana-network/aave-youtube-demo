@@ -143,7 +143,6 @@ export const SupplyActions = React.memo(
           if (allowance && allowance.allow) {
             allowance.allow(values);
             setAllowanceState({ ...allowanceState, loading: true, success: false });
-            // clearCaAllowance();
           }
       } catch (error) {
         const parsedError = getErrorTextFromError(error, TxAction.APPROVAL, false);
