@@ -55,29 +55,30 @@ export const useApprovalTx = ({
   const approval = async () => {
     try {
       if (requiresApproval && approvedAmount) {
-        if (usePermit) {
-          setApprovalTxState({ ...approvalTxState, loading: true });
-          const deadline = Math.floor(Date.now() / 1000 + 3600).toString();
-          const signatureRequest = await generateSignatureRequest({
-            ...approvedAmount,
-            deadline,
-            amount:
-            signatureAmount === '-1'
-            ? constants.MaxUint256.toString()
-            : parseUnits(signatureAmount, decimals).toString(),
-          });
+        // if (usePermit) {
+        //   console.log("requires permit")
+        //   setApprovalTxState({ ...approvalTxState, loading: true });
+        //   const deadline = Math.floor(Date.now() / 1000 + 3600).toString();
+        //   const signatureRequest = await generateSignatureRequest({
+        //     ...approvedAmount,
+        //     deadline,
+        //     amount:
+        //     signatureAmount === '-1'
+        //     ? constants.MaxUint256.toString()
+        //     : parseUnits(signatureAmount, decimals).toString(),
+        //   });
 
-          const response = await signTxData(signatureRequest);
-          if (onSignTxCompleted) {
-            onSignTxCompleted({ signature: response, deadline, amount: signatureAmount });
-          }
-          setTxError(undefined);
-          setApprovalTxState({
-            txHash: MOCK_SIGNED_HASH,
-            loading: false,
-            success: true,
-          });
-        } else {
+        //   const response = await signTxData(signatureRequest);
+        //   if (onSignTxCompleted) {
+        //     onSignTxCompleted({ signature: response, deadline, amount: signatureAmount });
+        //   }
+        //   setTxError(undefined);
+        //   setApprovalTxState({
+        //     txHash: MOCK_SIGNED_HASH,
+        //     loading: false,
+        //     success: true,
+        //   });
+        // } else {
           let approveTxData = generateApproval(
             approvedAmount,
             amountToApprove ? { amount: '0' } : {}
@@ -102,7 +103,7 @@ export const useApprovalTx = ({
           if (onApprovalTxConfirmed) {
             onApprovalTxConfirmed();
           }
-        }
+        // }
       }
     } catch (error) {
       const parsedError = getErrorTextFromError(error, TxAction.GAS_ESTIMATION, false);
