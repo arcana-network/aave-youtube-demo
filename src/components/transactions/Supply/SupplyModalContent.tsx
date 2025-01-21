@@ -1,7 +1,7 @@
 import { API_ETH_MOCK_ADDRESS, ChainId } from '@aave/contract-helpers';
 import { USD_DECIMALS, valueToBigNumber } from '@aave/math-utils';
 import { Trans } from '@lingui/macro';
-import { Skeleton, Stack, Typography } from '@mui/material';
+import { Skeleton, Stack, SvgIcon, Typography } from '@mui/material';
 import BigNumber from 'bignumber.js';
 import React, { useEffect, useState } from 'react';
 import { WrappedTokenTooltipContent } from 'src/components/infoTooltips/WrappedTokenToolTipContent';
@@ -53,10 +53,13 @@ import { IsolationModeWarning } from '../Warnings/IsolationModeWarning';
 import { SNXWarning } from '../Warnings/SNXWarning';
 import { SupplyActions } from './SupplyActions';
 import { SupplyWrappedTokenActions } from './SupplyWrappedTokenActions';
-import { useAllowance, useBalance, useCaIntent, useCaState } from 'src/services/ca';
+import { eventListener, useAllowance, useBalance, useCaIntent, useCaSdkAuth, useCaState } from 'src/services/ca';
 import { CA } from '@arcana/ca-sdk';
 import { current } from 'immer';
 import Tooltip from '@visx/tooltip/lib/tooltips/Tooltip';
+import { CheckIcon } from '@heroicons/react/solid';
+import { PendingActions, PendingRounded } from '@mui/icons-material';
+import PendingIcon from '@mui/icons-material/Pending';
 
 export enum ErrorType {
   CAP_REACHED,
@@ -117,8 +120,6 @@ export const SupplyModalContentWrapper = (
     ),
   };
 
-
-
   return canSupplyAsWrappedToken ? (
     <SupplyWrappedTokenModalContent {...props} />
   ) : (
@@ -135,6 +136,7 @@ interface SupplyModalContentProps extends ModalWrapperProps {
   wrappedTokenConfig?: WrappedTokenConfig;
   user: ExtendedFormattedUser;
 }
+
 
 export const SupplyModalContent = React.memo(
   ({
@@ -161,12 +163,22 @@ export const SupplyModalContent = React.memo(
     } = useModalContext();
 
     const [steps, setSteps] = useState(useCaState());
+    useEffect(() => {
+      const interval = setInterval(() => {
+        if(steps.steps.length>0){
+          console.log("updated state")
+          setSteps(useCaState());
+          console.log(steps.steps.find((s) => s.done==true)?.type);
+      }}
+      , 1000);
+      return () => clearInterval(interval);
+    }
+    , []);
 
     // console.log("Steps states: ",steps.steps.find((s) => s.done==true))
     const minRemainingBaseTokenBalance = useRootStore(
       (state) => state.poolComputed.minRemainingBaseTokenBalance
     );
-
 
     // states
     const [amount, setAmount] = useState('');
@@ -206,7 +218,6 @@ export const SupplyModalContent = React.memo(
       .multipliedBy(marketReferencePriceInUsd)
       .shiftedBy(-USD_DECIMALS);
 
-    
     const isMaxSelected = amount === maxAmountToSupply;
 
     const healfthFactorAfterSupply = calculateHFAfterSupply(user, poolReserve, amountInEth);
@@ -231,8 +242,6 @@ export const SupplyModalContent = React.memo(
         />
       );
 
-    
-
     return (
       <>
         {isolationModeWarning}
@@ -247,7 +256,6 @@ export const SupplyModalContent = React.memo(
           poolReserve.symbol === 'AAVE' &&
           isFeatureEnabled.staking(currentMarketData) && <AAVEWarning />}
         {poolReserve.symbol === 'SNX' && maxAmountToSupply !== '0' && <SNXWarning />}
-
         <AssetInput
           value={amount}
           onChange={handleChange}
@@ -294,37 +302,60 @@ export const SupplyModalContent = React.memo(
             // intent is done, but supply is not done
             steps.steps.map((step, index) => {
               return (
-                <div key={index}>
-                  <h1>{step.done ? "✅":"⭕"}{' '}{step.type}</h1>
+                <div key={index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '5px',
+                    margin: '0px',
+                  }}
+                >
+                   <SvgIcon sx={{ color: step.done? 'success.main': 'error.main', fontSize: '32px' }}>
+                    {step.done ?
+                      <CheckIcon />
+                     : 
+                      <PendingIcon/>} 
+                    </SvgIcon>
+                    <div 
+                      style={{
+                        fontSize: '0.9rem',
+                        fontWeight: 'normal',
+                        padding: '5px',
+                      }}
+                    >
+                      {step.type}
+                    </div>
                 </div>
               );
-            }
-            )
+            })
           ) : (
             //intent is displayed
             <div>
               <h1>Intent details</h1>
               <h3>
                 You Have:
-                <div key={"sources"} style={{ 
-                      display: 'flex',
-                      flexDirection: 'column',
-                      padding: '10px',
-                          margin: '0px',
-                          border: '1px solid black',
-                          borderRadius: '5px',
-                          width: '100%',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          backgroundColor: 'hsl(0, 12, 93)',
-                          marginTop: '10px',
-                          marginBottom: '10px',
-                     }}>
-                {useCaIntent()?.intent?.sources.map((source, index) => {
-                  
-                  return (
-                    // align source chain name to the left and amount to the right
-                      <div key={index}
+                <div
+                  key={'sources'}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    padding: '10px',
+                    margin: '0px',
+                    border: '1px solid black',
+                    borderRadius: '5px',
+                    width: '100%',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    backgroundColor: 'hsl(0, 12, 93)',
+                    marginTop: '10px',
+                    marginBottom: '10px',
+                  }}
+                >
+                  {useCaIntent()?.intent?.sources.map((source, index) => {
+                    return (
+                      // align source chain name to the left and amount to the right
+                      <div
+                        key={index}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -366,9 +397,9 @@ export const SupplyModalContent = React.memo(
                           {useCaIntent()?.intent?.token.symbol}
                         </div>
                       </div>
-                  );
-                })}
-                <div
+                    );
+                  })}
+                  <div
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -403,13 +434,17 @@ export const SupplyModalContent = React.memo(
                         fontWeight: 'normal',
                       }}
                     >
-                      {Number(balances?.find(
-                        (b) => b.symbol === poolReserve.symbol)?.breakdown.find((b)=>b.chain.id==useCaIntent()?.intent?.destination.chainID!)?.balance)
-                      }{' '}
+                      {Number(
+                        balances
+                          ?.find((b) => b.symbol === poolReserve.symbol)
+                          ?.breakdown.find(
+                            (b) => b.chain.id == useCaIntent()?.intent?.destination.chainID!
+                          )?.balance
+                      )}{' '}
                       {useCaIntent()?.intent?.token.symbol}
                     </div>
                   </div>
-                                    </div>
+                </div>
                 You Need
                 <div style={{ display: 'flex' }}>
                   <div
@@ -455,11 +490,17 @@ export const SupplyModalContent = React.memo(
                         fontWeight: 'normal',
                       }}
                     >
-                      {Number(Number(useCaIntent()?.intent?.sourcesTotal)+Number(
-                        balances?.find(
-                          (b) => b.symbol === poolReserve.symbol)?.breakdown.find((b)=>b.chain.id==useCaIntent()?.intent?.destination.chainID!)?.balance
-                        )-Number(useCaIntent().intent?.fees.total)).toPrecision(10)
-                        }{' '}
+                      {Number(
+                        Number(useCaIntent()?.intent?.sourcesTotal) +
+                          Number(
+                            balances
+                              ?.find((b) => b.symbol === poolReserve.symbol)
+                              ?.breakdown.find(
+                                (b) => b.chain.id == useCaIntent()?.intent?.destination.chainID!
+                              )?.balance
+                          ) -
+                          Number(useCaIntent().intent?.fees.total)
+                      ).toPrecision(10)}{' '}
                       {useCaIntent()?.intent?.token.symbol}
                     </div>
                   </div>
@@ -499,8 +540,7 @@ export const SupplyModalContent = React.memo(
                       <div>CA Gas Fees:</div>
                       <div> </div>
                       <div>
-                        {useCaIntent().intent?.fees.caGas}{' '}
-                        {useCaIntent()?.intent?.token.symbol}
+                        {useCaIntent().intent?.fees.caGas} {useCaIntent()?.intent?.token.symbol}
                       </div>
                     </div>
 
@@ -514,8 +554,7 @@ export const SupplyModalContent = React.memo(
                       <div>Solver Fees:</div>
                       <div> </div>
                       <div>
-                        {useCaIntent().intent?.fees.solver}{' '}
-                        {useCaIntent()?.intent?.token.symbol}
+                        {useCaIntent().intent?.fees.solver} {useCaIntent()?.intent?.token.symbol}
                       </div>
                     </div>
 
@@ -529,8 +568,7 @@ export const SupplyModalContent = React.memo(
                       <div>Protocol Fees:</div>
                       <div> </div>
                       <div>
-                        {useCaIntent().intent?.fees.protocol}{' '}
-                        {useCaIntent()?.intent?.token.symbol}
+                        {useCaIntent().intent?.fees.protocol} {useCaIntent()?.intent?.token.symbol}
                       </div>
                     </div>
 
@@ -550,30 +588,37 @@ export const SupplyModalContent = React.memo(
                     </div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
                   <div>Total Spend:</div>
                   <div> </div>
-                  <div>{
-                    Number(Number(useCaIntent()?.intent?.sourcesTotal)+Number(
-                      balances?.find(
-                        (b) => b.symbol === poolReserve.symbol)?.breakdown.find((b)=>b.chain.id==useCaIntent()?.intent?.destination.chainID!)?.balance
-                      )
+                  <div>
+                    {Number(
+                      Number(useCaIntent()?.intent?.sourcesTotal) +
+                        Number(
+                          balances
+                            ?.find((b) => b.symbol === poolReserve.symbol)
+                            ?.breakdown.find(
+                              (b) => b.chain.id == useCaIntent()?.intent?.destination.chainID!
+                            )?.balance
+                        )
                       // +Number(useCaIntent()?.intent?.fees.total)
-                    ).toPrecision(10)
-                    }{' '}{useCaIntent()?.intent?.token.symbol}</div>
+                    ).toPrecision(10)}{' '}
+                    {useCaIntent()?.intent?.token.symbol}
+                  </div>
                 </div>
               </h3>
             </div>
           )
-        ) : 
-        (allowanceState.success ) 
-        // true == true
-         ? (
+        ) : allowanceState.success ? (
+          // true == true
           <div>
-            <table style={{
-              display: 'flex',
-              flexDirection: 'column',
-              margin: '0px',
+            <table
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                margin: '0px',
                 border: '1px solid black',
                 borderRadius: '5px',
                 width: '100%',
@@ -581,180 +626,200 @@ export const SupplyModalContent = React.memo(
                 textOverflow: 'ellipsis',
                 backgroundColor: 'hsl(0, 12, 93)',
                 marginBottom: '10px',
-             }}>
-          <thead>
-            <tr
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-evenly',
-                alignItems: 'center',
-                padding: '5px',
-                width: '100%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                backgroundColor: 'hsl(0, 12, 93)',
-                marginTop: '10px',
-                marginBottom: '10px',
               }}
             >
-              <th
-              style={{
-                justifyContent: 'space-evenly',
-                alignItems: 'center',
-                padding: '5px',
-                width: '15%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                backgroundColor: 'hsl(0, 12, 93)',
-                marginTop: '10px',
-                marginBottom: '10px',
-              }}>Token</th>
-              <th
-              style={{
-                justifyContent: 'space-evenly',
-                alignItems: 'center',
-                width: '15%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                backgroundColor: 'hsl(0, 12, 93)',
-                marginTop: '10px',
-                marginBottom: '10px',
-              }}>Chain</th>
-              <th
-              style={{
-                justifyContent: 'space-evenly',
-                alignItems: 'center',
-                padding: '5px',
-                width: '25%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                backgroundColor: 'hsl(0, 12, 93)',
-                marginTop: '10px',
-                marginBottom: '10px',
-              }}>Current Allowance</th>
-              <th
-              style={{
-                justifyContent: 'space-evenly',
-                alignItems: 'center',
-                padding: '5px',
-                width: '25%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                backgroundColor: 'hsl(0, 12, 93)',
-                marginTop: '10px',
-                marginBottom: '10px',
-              }}>Min Allowance</th>
-              <th
-              style={{
-                justifyContent: 'space-evenly',
-                alignItems: 'center',
-                padding: '5px',
-                width: '25%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                backgroundColor: 'hsl(0, 12, 93)',
-                marginTop: '10px',
-                marginBottom: '10px',
-              }}>Set Allowance</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr 
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-evenly',
-              }}
-            >
-              {
-                valal.data.map((elem, index) => {
-                  return (
-                    <tr key={index}>
-                      <td
-                        style={{
-                          justifyContent: 'space-evenly',
-                          alignItems: 'center',
-                          padding: '5px',
-                          width: '5%',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          backgroundColor: 'hsl(0, 12, 93)',
-                          marginTop: '10px',
-                          marginBottom: '10px',
-                        }}
-                      >{ elem.token.symbol }</td>
-              <td
-              style={{
-                justifyContent: 'space-evenly',
-                alignItems: 'center',
-                padding: '5px',
-                width: '15%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                backgroundColor: 'hsl(0, 12, 93)',
-                marginTop: '10px',
-                marginBottom: '10px',
-              }}
-              >{
-                 `${elem.chainName}` }</td>
-              <td
-              style={{
-                justifyContent: 'space-evenly',
-                alignItems: 'center',
-                padding: '5px',
-                width: '25%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                backgroundColor: 'hsl(0, 12, 93)',
-                marginTop: '10px',
-                marginBottom: '10px',
-              }}>{
-                 elem.currentAllowance.toString().startsWith("11579208923731619542") ? "MAX" :
-                elem.currentAllowance 
-                }</td>
-              <td
-              style={{
-
-                justifyContent: 'space-between',
-                alignItems: 'left',
-                padding: '5px',
-                width: '25%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                backgroundColor: 'hsl(0, 12, 93)',
-                marginTop: '10px',
-                marginBottom: '10px',
-              }}>
-                {elem.minAllowance }
-              </td>
-              <td style={{
-                // flexDirection: 'row',
-                justifyContent: 'space-evenly',
-                alignItems: 'right',
-                width: '25%',
-                direction: 'rtl',
-                paddingRight: '10px',
-                }}>
-                <input 
-                type="string" value="MAX" disabled
-                style={{
-                  // flexDirection: 'row',
-                  justifyContent: 'space-evenly',
-                  alignItems: 'center',
-                  width: '100%',
-                  direction: 'ltr'
-                }}
-                />
-              </td>
-                    </tr>
-                  )
-                }
-                )
-              }
-            </tr>
-          </tbody>
-        </table>
+              <thead>
+                <tr
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-evenly',
+                    alignItems: 'center',
+                    padding: '5px',
+                    width: '100%',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    backgroundColor: 'hsl(0, 12, 93)',
+                    marginTop: '10px',
+                    marginBottom: '10px',
+                  }}
+                >
+                  <th
+                    style={{
+                      justifyContent: 'space-evenly',
+                      alignItems: 'center',
+                      padding: '5px',
+                      width: '15%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      backgroundColor: 'hsl(0, 12, 93)',
+                      marginTop: '10px',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    Token
+                  </th>
+                  <th
+                    style={{
+                      justifyContent: 'space-evenly',
+                      alignItems: 'center',
+                      width: '15%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      backgroundColor: 'hsl(0, 12, 93)',
+                      marginTop: '10px',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    Chain
+                  </th>
+                  <th
+                    style={{
+                      justifyContent: 'space-evenly',
+                      alignItems: 'center',
+                      padding: '5px',
+                      width: '25%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      backgroundColor: 'hsl(0, 12, 93)',
+                      marginTop: '10px',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    Current Allowance
+                  </th>
+                  <th
+                    style={{
+                      justifyContent: 'space-evenly',
+                      alignItems: 'center',
+                      padding: '5px',
+                      width: '25%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      backgroundColor: 'hsl(0, 12, 93)',
+                      marginTop: '10px',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    Min Allowance
+                  </th>
+                  <th
+                    style={{
+                      justifyContent: 'space-evenly',
+                      alignItems: 'center',
+                      padding: '5px',
+                      width: '25%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      backgroundColor: 'hsl(0, 12, 93)',
+                      marginTop: '10px',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    Set Allowance
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-evenly',
+                  }}
+                >
+                  {valal.data.map((elem, index) => {
+                    return (
+                      <tr key={index}>
+                        <td
+                          style={{
+                            justifyContent: 'space-evenly',
+                            alignItems: 'center',
+                            padding: '5px',
+                            width: '5%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            backgroundColor: 'hsl(0, 12, 93)',
+                            marginTop: '10px',
+                            marginBottom: '10px',
+                          }}
+                        >
+                          {elem.token.symbol}
+                        </td>
+                        <td
+                          style={{
+                            justifyContent: 'space-evenly',
+                            alignItems: 'center',
+                            padding: '5px',
+                            width: '15%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            backgroundColor: 'hsl(0, 12, 93)',
+                            marginTop: '10px',
+                            marginBottom: '10px',
+                          }}
+                        >{`${elem.chainName}`}</td>
+                        <td
+                          style={{
+                            justifyContent: 'space-evenly',
+                            alignItems: 'center',
+                            padding: '5px',
+                            width: '25%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            backgroundColor: 'hsl(0, 12, 93)',
+                            marginTop: '10px',
+                            marginBottom: '10px',
+                          }}
+                        >
+                          {elem.currentAllowance.toString().startsWith('11579208923731619542')
+                            ? 'MAX'
+                            : elem.currentAllowance}
+                        </td>
+                        <td
+                          style={{
+                            justifyContent: 'space-between',
+                            alignItems: 'left',
+                            padding: '5px',
+                            width: '25%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            backgroundColor: 'hsl(0, 12, 93)',
+                            marginTop: '10px',
+                            marginBottom: '10px',
+                          }}
+                        >
+                          {elem.minAllowance}
+                        </td>
+                        <td
+                          style={{
+                            // flexDirection: 'row',
+                            justifyContent: 'space-evenly',
+                            alignItems: 'right',
+                            width: '25%',
+                            direction: 'rtl',
+                            paddingRight: '10px',
+                          }}
+                        >
+                          <input
+                            type="string"
+                            value="MAX"
+                            disabled
+                            style={{
+                              // flexDirection: 'row',
+                              justifyContent: 'space-evenly',
+                              alignItems: 'center',
+                              width: '100%',
+                              direction: 'ltr',
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tr>
+              </tbody>
+            </table>
           </div>
         ) : (
           // nothing is done
@@ -803,7 +868,6 @@ export const SupplyWrappedTokenModalContent = ({
   if (!wrappedTokenConfig) {
     throw new Error('Wrapped token config is not defined');
   }
-
 
   const tokenInBalance = walletBalances[wrappedTokenConfig.tokenIn.underlyingAsset].amount;
   const tokenOutBalance = walletBalances[wrappedTokenConfig.tokenOut.underlyingAsset].amount;
