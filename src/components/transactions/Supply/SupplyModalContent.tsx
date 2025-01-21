@@ -60,6 +60,7 @@ import Tooltip from '@visx/tooltip/lib/tooltips/Tooltip';
 import { CheckIcon } from '@heroicons/react/solid';
 import { PendingActions, PendingRounded } from '@mui/icons-material';
 import PendingIcon from '@mui/icons-material/Pending';
+import { getTextFromStep } from 'src/services/getTextFromSteps';
 
 export enum ErrorType {
   CAP_REACHED,
@@ -323,7 +324,7 @@ export const SupplyModalContent = React.memo(
                         padding: '5px',
                       }}
                     >
-                      {step.type}
+                      {getTextFromStep(step)}
                     </div>
                 </div>
               );
