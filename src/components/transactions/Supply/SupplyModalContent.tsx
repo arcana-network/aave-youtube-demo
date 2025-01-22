@@ -283,7 +283,7 @@ export const SupplyModalContent = React.memo(
           ]}
           capType={CapType.supplyCap}
           isMaxSelected={isMaxSelected}
-          disabled={supplyTxState.loading || intentTxState.success || intentTxState.loading}
+          disabled={supplyTxState.loading || intentTxState.success || intentTxState.loading || allowanceState.success}
           maxValue={
             CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)
               ? balances?.find(
@@ -630,6 +630,13 @@ export const SupplyModalContent = React.memo(
               alignContent: 'center',
             }}
           >
+            <div
+            style={{ padding: '10px', textAlign: 'center'}}
+            >
+              To make the experience seamless, you<br></br>
+              will need to give {poolReserve.symbol}<br></br>
+              allowance to the Arcana Vault contract.
+            </div>
             <TableContainer component={Paper}
             style={{
               padding: '0px',
