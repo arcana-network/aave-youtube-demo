@@ -21,9 +21,7 @@ export const getTextFromStep = (step: ProgressStep): string => {
     case "INTENT_HASH_SIGNED":
       return "User signed the intent hash";
     case "INTENT_SUBMITTED":
-      return `Intent submitted to the chain: Link - ${
-        (step.data as { explorerURL: string }).explorerURL
-      }`;
+      return `Intent submitted to the chain`;
     case "INTENT_COLLECTION":
       return `Intent collected on the chain ${
         (step.data as { confirmed: number })?.confirmed
