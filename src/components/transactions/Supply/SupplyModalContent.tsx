@@ -660,7 +660,7 @@ export const SupplyModalContent = React.memo(
                 underline="always"
                 target="_blank"
               >
-                <Trans>Learn more</Trans>
+                <Trans>Learn More</Trans>
               </Link>
             </div>
           </div>
