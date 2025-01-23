@@ -19,6 +19,7 @@ import invariant from 'tiny-invariant';
 import { GasPriceData, useGasPrice } from '../../../hooks/useGetGasPrices';
 import { FormattedNumber } from '../../primitives/FormattedNumber';
 import { GasOption } from './GasStationProvider';
+import { useBalance } from 'src/services/ca';
 
 export interface GasStationProps {
   gasLimit: BigNumber;
@@ -63,6 +64,7 @@ export const GasStation: React.FC<GasStationProps> = ({
   const { data: isContractAddress } = useIsContractAddress(account);
   const nativeBalanceUSD = walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amountUSD;
   const { name, baseAssetSymbol } = getNetworkConfig(selectedChainId);
+  const unifiedBalance = useBalance()?.find((balance) => balance.symbol === baseAssetSymbol)?.balanceInFiat;
 
   const { loadingTxns } = useModalContext();
 
@@ -104,7 +106,10 @@ export const GasStation: React.FC<GasStationProps> = ({
         </Box>
         {rightComponent}
       </Box>
-      {!disabled && !isContractAddress && Number(nativeBalanceUSD) < Number(totalGasCostsUsd) && (
+      {!disabled && !isContractAddress && ((Number(unifiedBalance
+        ? unifiedBalance
+        : nativeBalanceUSD
+      ) )< Number(totalGasCostsUsd)) && (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Warning severity="warning" sx={{ mb: 0, mx: 'auto' }}>
             You do not have enough {baseAssetSymbol} in your account to pay for transaction fees on{' '}
