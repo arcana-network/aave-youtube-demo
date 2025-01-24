@@ -131,7 +131,7 @@ export const TxActionsWrapper = ({
     if (intentTxState?.loading)
       return { loading: true, disabled: true, content: intentActionInProgressText };
     if(allowanceTxState?.success){
-      return { loading: false,disabled: false, content: "Verify Allowance", handleClick: handleAllowance };
+      return { loading: false,disabled: false, content: "Allowance to Arcana Vault", handleClick: handleAllowance };
     }
     if(allowanceTxState?.loading && !allowanceTxState?.success && !intentTxState?.success){
       console.log("success");

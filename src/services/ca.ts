@@ -1,5 +1,6 @@
 import { CA, Intent, ProgressStep } from '@arcana/ca-sdk'
 import { AllowanceHookInput, EthereumProvider } from '@arcana/ca-sdk/dist/types/typings'
+import { min } from 'cypress/types/lodash'
 import { NullValueNode } from 'graphql'
 import { useCallback } from 'react'
 import { useModalContext } from 'src/hooks/useModal'
@@ -30,7 +31,19 @@ let allowance : {
     allowances: Array<"min" | "max" | bigint | string>,
     values: Array<{ chainID: number; allowance: bigint; token: string }>
 } = {
-    data: [],
+    data: [{
+      minAllowance: "0",
+      currentAllowance: "0",
+      chainID: 1,
+      chainName: "Ethereum",
+      token: {
+          contractAddress: `0x`,
+          decimals: 0,
+          symbol: "ETH",
+          name: "Ethereum"
+      }
+    }
+    ],
     allow: null,
     deny: () => { },
     open: false,
@@ -88,12 +101,6 @@ let caIntent : {
         const v = state.steps.find(s => {
           return s.typeID === data.data.typeID
         })
-        if(data.data.typeID=="IF"){
-            await caSDK?.getUnifiedBalances().then((res) => {
-                console.log("balance refreshed: ", res);
-                balance = res;
-            });
-        }
         console.log({ v })
         if (v) {
           v.done = true
@@ -101,6 +108,12 @@ let caIntent : {
             v.data = data.data.data
           }
         }
+        if(data.data.typeID=="IF"){
+          await caSDK?.getUnifiedBalances().then((res) => {
+              console.log("balance refreshed: ", res);
+              balance = res;
+          });
+      }
         break;
       }
     }
@@ -119,6 +132,7 @@ const useCaSdkAuth = async () => {
                 await caSDK.init()
                 balance = await caSDK.getUnifiedBalances()
                 allowance.values = await caSDK.allowance().get()
+                console.log('allowance values:', allowance.values)
                 isInitialized = true
                 console.log('CA SDK initialized')
                 caSDK.setOnAllowanceHook(async ({allow, deny, sources}) => {
@@ -161,6 +175,7 @@ const useBalance = (
 }
 
 const useBridge = (amount: string | number, chainId: number, symbol: string) => {
+  console.log("symbol: ", symbol)
     return caSDK?.bridge().amount(amount).chain(chainId).token(symbol).exec()
 }
 

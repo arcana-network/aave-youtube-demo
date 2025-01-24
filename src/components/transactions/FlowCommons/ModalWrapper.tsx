@@ -52,7 +52,9 @@ export const ModalWrapper: React.FC<{
   const currentNetworkConfig = useRootStore((store) => store.currentNetworkConfig);
   const { walletBalances } = useWalletBalances(currentMarketData);
   const { user, reserves } = useAppDataContext();
-  const { txError, mainTxState } = useModalContext();
+  const { txError, mainTxState,intentTxState,
+    allowanceState, } = useModalContext();
+  
 
   const { isWrongNetwork, requiredChainId } = useIsWrongNetwork(_requiredChainId);
 
@@ -80,7 +82,16 @@ export const ModalWrapper: React.FC<{
   return (
     <AssetCapsProvider asset={poolReserve}>
       {!mainTxState.success && (
-        <TxModalTitle title={title} symbol={hideTitleSymbol ? undefined : symbol} />
+        <TxModalTitle title={
+          intentTxState.success ? 
+          (
+            mainTxState.loading ?
+            'Transaction in progress ' :
+            'Intents for ') :
+          allowanceState.success ?
+          'Allowances for ' :
+          title
+        } symbol={hideTitleSymbol ? undefined : symbol} />
       )}
       {isWrongNetwork && !readOnlyModeAddress && (
         <ChangeNetworkWarning

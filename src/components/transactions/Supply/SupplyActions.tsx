@@ -139,12 +139,14 @@ export const SupplyActions = React.memo(
       try {
           useAllowance().open = false;
           const values = useAllowance().data.map(() => "1.15")
+          console.log("values: ", values)
           const allowance = useAllowance();
           if (allowance && allowance.allow) {
             allowance.allow(values);
             setAllowanceState({ ...allowanceState, loading: true, success: false });
           }
       } catch (error) {
+        console.log("error: ", error)
         const parsedError = getErrorTextFromError(error, TxAction.APPROVAL, false);
         setTxError(parsedError);
         setApprovalTxState({ ...approvalTxState, loading: false });
@@ -259,9 +261,9 @@ export const SupplyActions = React.memo(
           setAllowanceState({ ...allowanceState, loading: true, success: false });
           if(            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId))
           &&
-          Number(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
-            const decimalAmount = new Decimal(amountToSupply).sub(caBalances?.find((balance) => balance.symbol === symbol)?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance!).toString();
-            await useBridge(decimalAmount, currentMarketData.chainId, symbol)?.then((res) => {
+          Number(caBalances?.find((balance) => balance.symbol === (symbol == "WETH"? "ETH": symbol))?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
+            const decimalAmount = new Decimal(amountToSupply).sub(caBalances?.find((balance) => balance.symbol === (symbol == "WETH"? "ETH": symbol))?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance!).add(symbol == "WETH" ? '': '0.00001').toString();
+            await useBridge(decimalAmount, currentMarketData.chainId, (symbol == "WETH" ? "ETH": symbol))?.then((res) => {
               console.log("CA completed")
               console.log({ res });
             });
@@ -276,6 +278,7 @@ export const SupplyActions = React.memo(
             await action();
           }
       } catch (error) {
+        console.log("error: ", error)
         const parsedError = getErrorTextFromError(error, TxAction.GAS_ESTIMATION, false);
         setTxError(parsedError);
         setMainTxState({

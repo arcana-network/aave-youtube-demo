@@ -248,6 +248,19 @@ export const SupplyModalContent = React.memo(
           addToken={addTokenProps}
         />
       );
+    console.log("useCaIntent()?.intent?.destination.chainID!", useCaIntent()?.intent?.destination.chainID)
+    console.log("balances", balances)
+    console.log("chain balance: ",balances
+      ?.find((b) => b.symbol === poolReserve.symbol)
+      ?.breakdown.find(
+        (b) => b.chain.id == useCaIntent()?.intent?.destination.chainID!
+      )?.balance, " pool reserve symbol: ", poolReserve.symbol)
+    console.log("unified balance: ",CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)
+    ? balances?.find(
+        (b) =>
+          b.symbol === (poolReserve.symbol == "WETH"? "ETH": poolReserve.symbol)
+      )?.balance
+    : maxAmountToSupply)
 
     return (
       <>
@@ -263,7 +276,9 @@ export const SupplyModalContent = React.memo(
           poolReserve.symbol === 'AAVE' &&
           isFeatureEnabled.staking(currentMarketData) && <AAVEWarning />}
         {poolReserve.symbol === 'SNX' && maxAmountToSupply !== '0' && <SNXWarning />}
-        <AssetInput
+        {
+          ((intentTxState.success && !supplyTxState.success) || allowanceState.success) ||
+          <AssetInput
           value={amount}
           onChange={handleChange}
           usdValue={amountInUsd.toString(10)}
@@ -273,7 +288,7 @@ export const SupplyModalContent = React.memo(
               balance: CA.getSupportedChains().find(
                 (chain) => chain.id === currentMarketData.chainId
               )
-                ? balances?.find((b) => b.symbol === poolReserve.symbol)?.balance
+                ? balances?.find((b) => b.symbol === (poolReserve.symbol =="WETH" ? "ETH": poolReserve.symbol))?.balance
                 : maxAmountToSupply,
               symbol: supplyUnWrapped ? currentNetworkConfig.baseAssetSymbol : poolReserve.symbol,
               iconSymbol: supplyUnWrapped
@@ -288,8 +303,7 @@ export const SupplyModalContent = React.memo(
             CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)
               ? balances?.find(
                   (b) =>
-                    b.symbol === poolReserve.symbol ||
-                    (poolReserve.symbol === 'WETH' && b.symbol === 'ETH')
+                    b.symbol === (poolReserve.symbol == "WETH"? "ETH": poolReserve.symbol)
                 )?.balance
               : maxAmountToSupply
           }
@@ -301,12 +315,12 @@ export const SupplyModalContent = React.memo(
               assetName: poolReserve.name,
             },
           }}
-        />
+        />}
 
         {intentTxState.success && !supplyTxState.success ? (
           // display useCaIntent().intent data in a div
           supplyTxState.loading ? (
-            // intent is done, but supply is not done
+            // supply steps are displayed
             steps.steps.map((step, index) => {
               return (
                 <div
@@ -443,7 +457,7 @@ export const SupplyModalContent = React.memo(
                     >
                       {Number(
                         balances
-                          ?.find((b) => b.symbol === poolReserve.symbol)
+                          ?.find((b) => b.symbol === (poolReserve.symbol =="WETH" ? "ETH": poolReserve.symbol))
                           ?.breakdown.find(
                             (b) => b.chain.id == useCaIntent()?.intent?.destination.chainID!
                           )?.balance
@@ -501,7 +515,7 @@ export const SupplyModalContent = React.memo(
                         Number(useCaIntent()?.intent?.sourcesTotal) +
                           Number(
                             balances
-                              ?.find((b) => b.symbol === poolReserve.symbol)
+                              ?.find((b) => b.symbol === (poolReserve.symbol == "WETH" ? "ETH": poolReserve.symbol))
                               ?.breakdown.find(
                                 (b) => b.chain.id == useCaIntent()?.intent?.destination.chainID!
                               )?.balance
@@ -605,7 +619,7 @@ export const SupplyModalContent = React.memo(
                       Number(useCaIntent()?.intent?.sourcesTotal) +
                         Number(
                           balances
-                            ?.find((b) => b.symbol === poolReserve.symbol)
+                            ?.find((b) => b.symbol === (poolReserve.symbol=="WETH" ? "ETH": poolReserve.symbol))
                             ?.breakdown.find(
                               (b) => b.chain.id == useCaIntent()?.intent?.destination.chainID!
                             )?.balance
@@ -619,7 +633,7 @@ export const SupplyModalContent = React.memo(
             </div>
           )
         ) : allowanceState.success ? (
-          // true == true
+          // allowance table is displayed
           <div
             style={{
               display: 'flex',
@@ -633,8 +647,8 @@ export const SupplyModalContent = React.memo(
             <div
             style={{ padding: '10px', textAlign: 'center'}}
             >
-              To make the experience seamless, you<br></br>
-              will need to give {poolReserve.symbol}<br></br>
+              To make the experience seamless, you
+              will need to give {poolReserve.symbol}
               allowance to the Arcana Vault contract.
             </div>
             <TableContainer component={Paper}
