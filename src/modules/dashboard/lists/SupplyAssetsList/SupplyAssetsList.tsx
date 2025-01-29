@@ -170,7 +170,7 @@ export const SupplyAssetsList = () => {
   const sortedSupplyReserves = tokensToSupply.sort((a, b) =>
     +a.walletBalanceUSD > +b.walletBalanceUSD ? -1 : 1
   );
-  const caBalances = useBalance(true);
+  const caBalances = useBalance();
 
   const filteredSupplyReserves = sortedSupplyReserves.filter((reserve) => {
     if(CA.getSupportedChains().find((chain) => chain.id === currentChainId)){

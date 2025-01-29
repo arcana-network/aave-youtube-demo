@@ -19,7 +19,7 @@ import { hexToAscii } from 'src/utils/utils';
 import { Web3Context } from '../hooks/useWeb3Context';
 import { WalletConnectConnector } from './WalletConnectConnector';
 import { getWallet, ReadOnlyModeConnector, WalletType } from './WalletOptions';
-import { useCaSdkAuth } from 'src/services/ca';
+import { useBalance, useCaSdkAuth } from 'src/services/ca';
 
 export type ERC20TokenType = {
   address: string;
@@ -159,10 +159,10 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({ chil
             });
           });
         }
-
         setSwitchNetworkError(undefined);
         setWalletType(wallet);
         localStorage.setItem('walletProvider', wallet.toString());
+        await useCaSdkAuth();
         setDeactivated(false);
         setLoading(false);
       } catch (e) {

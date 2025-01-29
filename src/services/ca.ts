@@ -130,7 +130,7 @@ const useCaSdkAuth = async () => {
                 })
                 caSDK.addCAEventListener(eventListener)
                 await caSDK.init()
-                balance = await caSDK.getUnifiedBalances()
+                balance = await caSDK?.getUnifiedBalances()!;
                 allowance.values = await caSDK.allowance().get()
                 console.log('allowance values:', allowance.values)
                 isInitialized = true
@@ -158,7 +158,9 @@ const useCaSdkAuth = async () => {
     }
     // @ts-expect-error
     const injectedProvider = window.ethereum;
-    await initializeCA(injectedProvider)
+    await initializeCA(injectedProvider).then(async () => {
+      balance = await caSDK?.getUnifiedBalances()!;
+    });
     return caSDK;
 }
 
@@ -166,17 +168,15 @@ const useCaSdkAuth = async () => {
 const useBalance = (
   refresh: boolean = false
 ) => {
-    if(refresh){
-        caSDK?.getUnifiedBalances().then((res) => {
-            balance = res;
-        });
+    if(refresh && caSDK!=null){
+        useCaSdkAuth()
     }
     return balance;
 }
 
-const useBridge = (amount: string | number, chainId: number, symbol: string) => {
+const useBridge = (amount: string | number, chainId: number, symbol: string, gas: bigint) => {
   console.log("symbol: ", symbol)
-    return caSDK?.bridge().amount(amount).chain(chainId).token(symbol).exec()
+    return caSDK?.bridge().amount(amount).chain(chainId).token(symbol).gas(gas).exec()
 }
 
 // isInitialised as a hook

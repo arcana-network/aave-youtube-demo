@@ -30,28 +30,9 @@ export default function Home() {
 
   let ca: CA | null = null;
 
-  if(currentAccount) {
-    useCaSdkAuth().then((caSDK) => {
-      ca = caSDK;
-    });
-  }
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      if(currentAccount) {
-          await useCaSdkAuth().then((caSDK) => {
-            ca = caSDK;
-          });
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }
-  , []);
-
   return (
     <>
       <DashboardTopPanel />
-
       <ContentContainer>
         {currentAccount && (
           <Box

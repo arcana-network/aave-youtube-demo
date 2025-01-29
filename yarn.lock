@@ -36,10 +36,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.0"
 
-"@arcana/ca-sdk@^0.0.3-beta.2":
-  version "0.0.3-beta.2"
-  resolved "https://registry.yarnpkg.com/@arcana/ca-sdk/-/ca-sdk-0.0.3-beta.2.tgz#821ee0328b24a0e4f7f888189723466fc34263ad"
-  integrity sha512-uIdZkMaDJh5KFEzxUpbeei9W9gZIXkBsNi9vxHZkMq89BEJ1MZ+Fu+teL3p6nhFJxRpYXrleNGp+aXdOhXLAiw==
+"@arcana/ca-sdk@^0.0.4-beta.2":
+  version "0.0.4-beta.2"
+  resolved "https://registry.yarnpkg.com/@arcana/ca-sdk/-/ca-sdk-0.0.4-beta.2.tgz#671fed45a95ac2e168804ba02ca5692ac198f0f4"
+  integrity sha512-suNEaC/z05B7R746/0O6JX0zQl18Qlhr8GgGRgePsDyfphjQJkSYgYoU783uheUrnSGvX3lV+ZO7pRLkAFhmvw==
   dependencies:
     "@cosmjs/proto-signing" "^0.32.4"
     "@cosmjs/stargate" "^0.32.4"

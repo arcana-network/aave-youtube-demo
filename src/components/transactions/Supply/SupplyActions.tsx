@@ -21,7 +21,7 @@ import { roundToTokenDecimals } from 'src/utils/utils';
 import Decimal from 'decimal.js';
 import { useWalletBalances } from 'src/hooks/app-data-provider/useWalletBalances';
 import { CA } from '@arcana/ca-sdk';
-
+import { BigNumber } from 'ethers';
 export interface SupplyActionProps extends BoxProps {
   amountToSupply: string;
   isWrongNetwork: boolean;
@@ -51,6 +51,7 @@ export const SupplyActions = React.memo(
       supplyWithPermit,
       walletApprovalMethodPreference,
       estimateGasLimit,
+      caGasPrice,
       addTransaction,
       currentMarketData,
     ] = useRootStore((state) => [
@@ -59,6 +60,7 @@ export const SupplyActions = React.memo(
       state.supplyWithPermit,
       state.walletApprovalMethodPreference,
       state.estimateGasLimit,
+      state.caGasPrice,
       state.addTransaction,
       state.currentMarketData,
     ]);
@@ -209,7 +211,7 @@ export const SupplyActions = React.memo(
 
           await response.wait(1);
         }
-
+        await useBalance(true);
         setMainTxState({
           txHash: response.hash,
           loading: false,
@@ -257,13 +259,16 @@ export const SupplyActions = React.memo(
     const intentAction = async () => {
       try {
         const caBalances = useBalance();
+        let gas = caBalances?.find((balance) => balance.symbol =="ETH")?.balanceInFiat! > 0.01 ? (BigNumber.from(0)) : await caGasPrice(currentMarketData.chainId);
+        console.log("gas: ", gas)
           setIntentTxState({ ...intentTxState, loading: true, success: false });
           setAllowanceState({ ...allowanceState, loading: true, success: false });
           if(            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId))
           &&
           Number(caBalances?.find((balance) => balance.symbol === (symbol == "WETH"? "ETH": symbol))?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
+            console.log("CA required")
             const decimalAmount = new Decimal(amountToSupply).sub(caBalances?.find((balance) => balance.symbol === (symbol == "WETH"? "ETH": symbol))?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance!).add(symbol == "WETH" ? '': '0.00001').toString();
-            await useBridge(decimalAmount, currentMarketData.chainId, (symbol == "WETH" ? "ETH": symbol))?.then((res) => {
+            await useBridge(decimalAmount, currentMarketData.chainId, (symbol == "WETH" ? "ETH": symbol), BigInt(gas!.toNumber()))?.then((res) => {
               console.log("CA completed")
               console.log({ res });
             });

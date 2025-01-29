@@ -174,9 +174,7 @@ export const SupplyModalContent = React.memo(
     useEffect(() => {
       const interval = setInterval(() => {
         if (steps.steps.length > 0) {
-          console.log('updated state');
           setSteps(useCaState());
-          console.log(steps.steps.find((s) => s.done == true)?.type);
         }
       }, 1000);
       return () => clearInterval(interval);
@@ -248,19 +246,6 @@ export const SupplyModalContent = React.memo(
           addToken={addTokenProps}
         />
       );
-    console.log("useCaIntent()?.intent?.destination.chainID!", useCaIntent()?.intent?.destination.chainID)
-    console.log("balances", balances)
-    console.log("chain balance: ",balances
-      ?.find((b) => b.symbol === poolReserve.symbol)
-      ?.breakdown.find(
-        (b) => b.chain.id == useCaIntent()?.intent?.destination.chainID!
-      )?.balance, " pool reserve symbol: ", poolReserve.symbol)
-    console.log("unified balance: ",CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId)
-    ? balances?.find(
-        (b) =>
-          b.symbol === (poolReserve.symbol == "WETH"? "ETH": poolReserve.symbol)
-      )?.balance
-    : maxAmountToSupply)
 
     return (
       <>

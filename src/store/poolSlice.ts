@@ -142,6 +142,7 @@ export interface PoolSlice {
   generateApproveDelegation: (args: Omit<ApproveDelegationType, 'user'>) => PopulatedTransaction;
   getCorrectPoolBundle: () => PoolBundleInterface | LendingPoolBundleInterface;
   estimateGasLimit: (tx: PopulatedTransaction, chainId?: number) => Promise<PopulatedTransaction>;
+  caGasPrice: (chainId: number) => Promise<BigNumber>;
 }
 
 export const createPoolSlice: StateCreator<
@@ -769,11 +770,20 @@ export const createPoolSlice: StateCreator<
       const provider = get().jsonRpcProvider(chainId);
       const defaultGasLimit: BigNumber = tx.gasLimit ? tx.gasLimit : BigNumber.from('0');
       delete tx.gasLimit;
+      console.log("approaching estimateGas")
       let estimatedGas = await provider.estimateGas(tx);
+      console.log("estimatedGas: ", estimatedGas)
       estimatedGas = estimatedGas.mul(115).div(100); // Add 15% buffer
       // use the max of the 2 values, airing on the side of caution to prioritize having enough gas vs submitting w/ most efficient gas limit
       tx.gasLimit = estimatedGas.gt(defaultGasLimit) ? estimatedGas : defaultGasLimit;
       return tx;
     },
-  };
-};
+
+    caGasPrice: async (chainId: number) => {
+      console.log("gas required")
+      const provider = get().jsonRpcProvider(chainId);
+      let gasPrice = await provider.getGasPrice();
+      return gasPrice;
+  },
+}
+}
