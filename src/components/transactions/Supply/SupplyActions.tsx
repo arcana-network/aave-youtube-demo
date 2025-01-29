@@ -259,7 +259,7 @@ export const SupplyActions = React.memo(
     const intentAction = async () => {
       try {
         const caBalances = useBalance();
-        let gas = caBalances?.find((balance) => balance.symbol =="ETH")?.balanceInFiat! > 0.01 ? (BigNumber.from(0)) : await caGasPrice(currentMarketData.chainId);
+        const gas = caBalances?.find((balance) => balance.symbol =="ETH")?.balanceInFiat! > 0.01 ? (BigNumber.from(0)) : await caGasPrice(currentMarketData.chainId);
         console.log("gas: ", gas)
           setIntentTxState({ ...intentTxState, loading: true, success: false });
           setAllowanceState({ ...allowanceState, loading: true, success: false });

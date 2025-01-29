@@ -28,8 +28,6 @@ export default function Home() {
     });
   }, [trackEvent]);
 
-  let ca: CA | null = null;
-
   return (
     <>
       <DashboardTopPanel />
