@@ -88,6 +88,11 @@ export function AppFooter() {
         setAnalyticsConfigOpen(true);
       },
     },
+    {
+      href: 'https://github.com/arcana-network/aave-ca/',
+      label: <Trans>Frontend Code</Trans>,
+      key: 'Frontend Code',
+    }
   ];
 
   return (

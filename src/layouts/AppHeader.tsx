@@ -224,6 +224,14 @@ export function AppHeader() {
         >
           <img src={uiConfig.appLogo} alt="AAVE" width={72} height={20} />
         </Box>
+        <Box component={Link} href="https://arcana.network/">
+          <Typography
+            variant="description"
+            sx={{ color: 'pink', display: { xs: 'none', md: 'block' } }}
+          >
+            Powered by Arcana Chain Abstraction SDK
+          </Typography>
+        </Box>
         <Box sx={{ mr: sm ? 1 : 3 }}>
           {ENABLE_TESTNET && (
             <ContentWithTooltip tooltipContent={testnetTooltip} offset={[0, -4]} withoutHover>
@@ -256,7 +264,6 @@ export function AppHeader() {
                   '&:hover, &.Mui-focusVisible': { backgroundColor: 'rgba(182, 80, 158, 0.7)' },
                 }}
               >
-                FORK
                 <SvgIcon sx={{ marginLeft: '2px', fontSize: '16px' }}>
                   <InformationCircleIcon />
                 </SvgIcon>
