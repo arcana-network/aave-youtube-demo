@@ -1,9 +1,5 @@
 import { CA, Intent, ProgressStep } from '@arcana/ca-sdk'
 import { AllowanceHookInput, EthereumProvider } from '@arcana/ca-sdk/dist/types/typings'
-import { min } from 'cypress/types/lodash'
-import { NullValueNode } from 'graphql'
-import { useCallback } from 'react'
-import { useModalContext } from 'src/hooks/useModal'
 
 
 
@@ -11,7 +7,17 @@ import { useModalContext } from 'src/hooks/useModal'
 
 let caSDK: CA | null = null
 let isInitialized = false
-let balance: { symbol: string; balance: string; balanceInFiat: number; decimals: number; icon: string | undefined; breakdown: { chain: { id: number; name: string; logo: string }; network: "evm"; contractAddress: `0x${string}`; isNative: boolean | undefined; balance: string; balanceInFiat: number }[]; local: boolean | undefined; abstracted: boolean | undefined }[] | null = null
+
+let balance: { 
+  symbol: string; 
+  balance: string; 
+  balanceInFiat: number; 
+  decimals: number; 
+  icon: string | undefined; 
+  breakdown: { chain: { id: number; name: string; logo: string }; network: "evm"; contractAddress: `0x${string}`; isNative: boolean | undefined; balance: string; balanceInFiat: number }[]; local: boolean | undefined; abstracted: boolean | undefined 
+
+}[] | null = null
+
 let allowance : {
     data: Array<{
       minAllowance: string;

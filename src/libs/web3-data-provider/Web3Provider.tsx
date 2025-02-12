@@ -314,16 +314,21 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({ chil
   const sendTx = async (
     txData: transactionType | PopulatedTransaction
   ): Promise<TransactionResponse> => {
-    if (provider) {
-      const { from, ...data } = txData;
-      const signer = provider.getSigner(from);
-      const txResponse: TransactionResponse = await signer.sendTransaction({
-        ...data,
-        value: data.value ? BigNumber.from(data.value) : undefined,
-      });
-      return txResponse;
+    try {
+      if (provider) {
+        const { from, ...data } = txData;
+        const signer = provider.getSigner(from);
+        const txResponse: TransactionResponse = await signer.sendTransaction({
+          ...data,
+          value: data.value ? BigNumber.from(data.value) : undefined,
+        });
+        return txResponse;
+      }
+      throw new Error('Error sending transaction. Provider not found');
     }
-    throw new Error('Error sending transaction. Provider not found');
+    catch (e) {
+      throw new Error('Error: '+e);
+    }
   };
 
   // TODO: recheck that it works on all wallets

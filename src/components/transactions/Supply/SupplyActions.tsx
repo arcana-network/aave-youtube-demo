@@ -217,6 +217,8 @@ export const SupplyActions = React.memo(
           loading: false,
           success: true,
         });
+        console.log("response: ", response)
+        console.log("setMainTxState: ", mainTxState)
 
         addTransaction(response.hash, {
           action,
@@ -263,9 +265,13 @@ export const SupplyActions = React.memo(
         console.log("gas: ", gas)
           setIntentTxState({ ...intentTxState, loading: true, success: false });
           setAllowanceState({ ...allowanceState, loading: true, success: false });
-          if(            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId))
-          &&
-          Number(caBalances?.find((balance) => balance.symbol === (symbol == "WETH"? "ETH": symbol))?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)<Number(amountToSupply)){ 
+          if(
+            (CA.getSupportedChains().find((chain) => chain.id === currentMarketData.chainId))
+            &&
+            Number(caBalances?.find((balance) => balance.symbol === (symbol == "WETH"? "ETH": symbol))?.
+            breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance)
+            < Number(amountToSupply)
+          ){ 
             console.log("CA required")
             const decimalAmount = new Decimal(amountToSupply).sub(caBalances?.find((balance) => balance.symbol === (symbol == "WETH"? "ETH": symbol))?.breakdown.find((breakdown) => breakdown.chain.id === currentMarketData.chainId)?.balance!).add(symbol == "WETH" ? '': '0.00001').toString();
             await useBridge(decimalAmount, currentMarketData.chainId, (symbol == "WETH" ? "ETH": symbol), BigInt(gas!.toNumber()))?.then((res) => {
