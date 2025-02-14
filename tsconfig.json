@@ -4,7 +4,7 @@
     "target": "es2016",
     "module": "esnext",
     "jsx": "preserve",
-    "allowJs": false,
+    "allowJs": true,
     "strict": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
@@ -16,14 +16,28 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "baseUrl": ".",
-    "typeRoots": ["./node_modules/@types"],
-    "lib": ["dom", "es2017"],
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
+    "lib": [
+      "dom",
+      "es2017",
+      "esnext"
+    ],
     "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "react": [
+        "./node_modules/@types/react"
+      ]
+    },
     "noEmit": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
     "useUnknownInCatchVariables": false,
+    "types": [
+      "node"
+    ]
   },
   "exclude": [
     "dist",
@@ -36,7 +50,12 @@
     "**/*.spec.tsx",
     "**/*.test.ts",
     "**/*.test.tsx",
-    "coverage",
+    "coverage"
   ],
-  "include": ["custom.d.ts", "next-env.d.ts", "**/*.ts", "**/*.tsx"]
+  "include": [
+    "custom.d.ts",
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ]
 }

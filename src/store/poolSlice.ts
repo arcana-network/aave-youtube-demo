@@ -782,7 +782,7 @@ export const createPoolSlice: StateCreator<
     caGasPrice: async (chainId: number) => {
       console.log("gas required")
       const provider = get().jsonRpcProvider(chainId);
-      let gasPrice = await provider.getGasPrice();
+      const gasPrice = await provider.getGasPrice();
       return gasPrice;
   },
 }
