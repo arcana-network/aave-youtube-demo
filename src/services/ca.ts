@@ -131,9 +131,8 @@ const useCaSdkAuth = async () => {
         try {
             if (!caSDK) {
                 console.log('Initializing CA SDK...')
-                caSDK = new CA(provider, {
-                    network: 'testnet',
-                })
+                caSDK = new CA();
+                caSDK.setEVMProvider(provider)
                 caSDK.addCAEventListener(eventListener)
                 await caSDK.init()
                 balance = await caSDK?.getUnifiedBalances()!;
