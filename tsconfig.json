@@ -3,7 +3,7 @@
   "compilerOptions": {
     "target": "es2016",
     "module": "esnext",
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "allowJs": true,
     "strict": true,
     "moduleResolution": "node",
@@ -36,7 +36,10 @@
     "incremental": true,
     "useUnknownInCatchVariables": false,
     "types": [
-      "node"
+      "node",
+      "jest",
+      "react",
+      "react-dom",
     ]
   },
   "exclude": [
