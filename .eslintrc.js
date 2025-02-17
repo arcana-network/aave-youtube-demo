@@ -25,7 +25,7 @@ module.exports = {
     'import/no-unresolved': 'off',
     '@ts-expect-error': 'off',
     '@typescript-eslint/no-empty-function': 'off',
-    ' @typescript-eslint/ban-ts-comment': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
     // disabled as with the static export Image does not make to much sense
     '@next/next/no-img-element': 'off',
     'react/self-closing-comp': 'off',
