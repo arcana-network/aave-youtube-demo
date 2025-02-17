@@ -1,5 +1,5 @@
 import { CA, Intent, ProgressStep } from '@arcana/ca-sdk'
-import { AllowanceHookInput, EthereumProvider } from '@arcana/ca-sdk/dist/types/typings'
+import { EthereumProvider } from '@arcana/ca-sdk'
 
 
 
@@ -131,9 +131,8 @@ const useCaSdkAuth = async () => {
         try {
             if (!caSDK) {
                 console.log('Initializing CA SDK...')
-                caSDK = new CA(provider, {
-                    network: 'testnet',
-                })
+                caSDK = new CA();
+                caSDK.setEVMProvider(provider)
                 caSDK.addCAEventListener(eventListener)
                 await caSDK.init()
                 balance = await caSDK?.getUnifiedBalances()!;
