@@ -19,6 +19,7 @@ import { useSharedDependencies } from 'src/ui-config/SharedDependenciesProvider'
 
 import { TxActionsWrapper } from '../TxActionsWrapper';
 import { APPROVAL_GAS_LIMIT, checkRequiresApproval } from '../utils';
+import { useBalance } from 'src/services/ca';
 
 interface SignedParams {
   signature: SignatureLike;
@@ -142,6 +143,8 @@ export const WithdrawAndUnwrapAction = ({
         response = await sendTx(txData);
         await response.wait(1);
       }
+      console.log("updating balance after withdrawl")
+      await useBalance(true);
       setMainTxState({
         txHash: response.hash,
         loading: false,

@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { DependencyList, useEffect, useRef, useState } from 'react';
 import { useModalContext } from 'src/hooks/useModal';
 import { useWeb3Context } from 'src/libs/hooks/useWeb3Context';
+import { useBalance } from 'src/services/ca';
 import { useRootStore } from 'src/store/root';
 import { TransactionDetails } from 'src/store/transactionsSlice';
 import { ApprovalMethod } from 'src/store/walletSlice';
@@ -282,6 +283,9 @@ export const useTransactionHandler = ({
         return processTx({
           tx: () => sendTx(params),
           successCallback: (txnResponse: TransactionResponse) => {
+            console.log("updating CA balance")
+            useBalance(true)
+            console.log("updated CA Balance")
             setMainTxState({
               txHash: txnResponse.hash,
               loading: false,
@@ -316,6 +320,9 @@ export const useTransactionHandler = ({
         return processTx({
           tx: () => sendTx(params),
           successCallback: (txnResponse: TransactionResponse) => {
+            console.log("updating CA balance")
+            useBalance(true)
+            console.log("updated CA Balance")
             setMainTxState({
               txHash: txnResponse.hash,
               loading: false,
