@@ -161,7 +161,7 @@ const useCaSdkAuth = async () => {
             console.error('Error initializing CA SDK:', error)
         }
     }
-    // @ts-expect-error
+    // @ts-ignore
     const injectedProvider = window.ethereum;
     await initializeCA(injectedProvider).then(async () => {
       balance = await caSDK?.getUnifiedBalances()!;

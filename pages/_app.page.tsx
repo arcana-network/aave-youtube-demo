@@ -3,6 +3,8 @@ import '/src/styles/variables.css';
 
 import { CacheProvider, EmotionCache } from '@emotion/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { WagmiProvider } from 'wagmi';
+import {config } from '../src/services/config';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Web3ReactProvider } from '@web3-react/core';
 import { providers } from 'ethers';
@@ -20,7 +22,7 @@ import { ModalContextProvider } from 'src/hooks/useModal';
 import { Web3ContextProvider } from 'src/libs/web3-data-provider/Web3Provider';
 import { useRootStore } from 'src/store/root';
 import { SharedDependenciesProvider } from 'src/ui-config/SharedDependenciesProvider';
-
+import { CAProvider } from '@arcana/ca-wagmi'
 import createEmotionCache from '../src/createEmotionCache';
 import { AppGlobalStyles } from '../src/layouts/AppGlobalStyles';
 import { LanguageProvider } from '../src/libs/LanguageProvider';
@@ -131,8 +133,10 @@ export default function MyApp(props: MyAppProps) {
         }
         imageUrl="https://app.aave.com/aave-com-opengraph.png"
       />
+      <WagmiProvider config={config}>
       <LanguageProvider>
         <QueryClientProvider client={queryClient}>
+          <CAProvider>
           <Web3ReactProvider getLibrary={getWeb3Library}>
             <Web3ContextProvider>
               <AppGlobalStyles>
@@ -165,8 +169,10 @@ export default function MyApp(props: MyAppProps) {
             </Web3ContextProvider>
           </Web3ReactProvider>
           <ReactQueryDevtools initialIsOpen={false} />
+          </CAProvider>
         </QueryClientProvider>
       </LanguageProvider>
+      </WagmiProvider>
     </CacheProvider>
   );
 }
