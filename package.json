@@ -34,6 +34,8 @@
     "@aave/contract-helpers": "1.30.5",
     "@aave/math-utils": "1.30.5",
     "@arcana/ca-sdk": "^0.0.5",
+    "@arcana/ca-wagmi": "^0.0.5",
+    "wagmi": "^2.13.4",
     "@bgd-labs/aave-address-book": "4.5.0",
     "@emotion/cache": "11.10.3",
     "@emotion/react": "11.10.4",

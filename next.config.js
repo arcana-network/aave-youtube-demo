@@ -23,7 +23,15 @@ module.exports = withBundleAnalyzer({
           },
         },
       ],
-    });
+    },{
+      test: /\.(woff|woff2|eot|ttf|otf)$/i,
+      type: 'asset/resource', // Handles font files as static assets
+    },
+    {
+      test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)$/i,
+      type: 'asset/resource', // Handles video/audio files as static assets
+    }
+  );
     config.experiments = { topLevelAwait: true };
     return config;
   },
