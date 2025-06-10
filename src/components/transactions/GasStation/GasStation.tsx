@@ -65,7 +65,7 @@ export const GasStation: React.FC<GasStationProps> = ({
   const nativeBalanceUSD = walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amountUSD;
   const { name, baseAssetSymbol } = getNetworkConfig(selectedChainId);
   const unifiedBalance = useBalance()?.find((balance) => balance.symbol === baseAssetSymbol)?.balanceInFiat;
-
+// comment here---
   const { loadingTxns } = useModalContext();
 
   const totalGasCostsUsd =
